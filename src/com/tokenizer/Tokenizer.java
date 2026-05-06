@@ -7,8 +7,8 @@ import java.lang.Character;
 
 public class Tokenizer {
 
-    private static final String AFTER_LPAR_BEFORE_DIGIT = "(?<=\\()(?=\\d)";
-    private static final String AFTER_DIGIT_BEFORE_RPAR = "(?<=\\d)(?=\\))";
+    private static final String AFTER_LPAR_BEFORE_DIGIT = "(?<=\\()(?=[\\w(])";
+    private static final String AFTER_DIGIT_BEFORE_RPAR = "(?<=[\\w)])(?=\\))";
     private static final String SPLIT_PATTERN = AFTER_LPAR_BEFORE_DIGIT + "|" + AFTER_DIGIT_BEFORE_RPAR + "| ";
 
     private static final Map<String, TokenType> KEYWORDS = Map.of(

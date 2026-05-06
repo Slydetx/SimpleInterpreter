@@ -9,9 +9,9 @@ public class TerminalScanner {
         Scanner sc = new Scanner(System.in);
 
         String currentTerminalInput = sc.nextLine();
-        while (currentTerminalInput != "") {
+        while (!currentTerminalInput.isEmpty()) {
 
-            fullTerminalInput.append(currentTerminalInput + "\n");
+            fullTerminalInput.append(currentTerminalInput).append("\n");
             currentTerminalInput = sc.nextLine();
         }
 
