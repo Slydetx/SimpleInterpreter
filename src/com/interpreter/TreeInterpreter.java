@@ -12,12 +12,24 @@ public class TreeInterpreter {
     public Object evaluate (InterpreterNode root) {
 
         switch (root) {
-            case AssignNode node -> {return evaluateAssign(node);}
+            case IfNode node       -> {return evaluateIf(node);}
+            case AssignNode node   -> {return evaluateAssign(node);}
             case BinaryOpNode node -> {return evaluateBinOp(node);}
-            case ValueNode node -> {return evaluateValue(node);}
+            case ValueNode node    -> {return evaluateValue(node);}
             case VariableNode node -> {return evaluateVariable(node);}
             default -> throw new IllegalArgumentException("Unknown node type");
         }
+    }
+
+    private Void evaluateIf(IfNode node) {
+        boolean isConditionTrue = isTrue(evaluate(node.condition));
+
+        if (isConditionTrue) {
+            evaluate(node.thenExpression);
+        } else {
+            evaluate(node.elseExpression);
+        }
+        return null;
     }
 
     private Void evaluateAssign(AssignNode node) {
@@ -36,6 +48,22 @@ public class TreeInterpreter {
             case Operator.PLUS -> {
                 return (Integer) evaluate(node.left) + (Integer) evaluate(node.right);
             }
+
+            case Operator.GT -> {
+                boolean greaterThan = (Integer) evaluate(node.left) > (Integer) evaluate(node.right);
+                return greaterThan ? 1 : 0;
+            }
+
+            case Operator.LT -> {
+                boolean lessThan = (Integer) evaluate(node.left) < (Integer) evaluate(node.right);
+                return lessThan ? 1 : 0;
+            }
+
+            case Operator.EQ -> {
+                boolean equal = (Integer) evaluate(node.left) == (Integer) evaluate(node.right);
+                return equal ? 1 : 0;
+            }
+
             default -> throw new IllegalStateException("Unknown operator");
         }
     }
@@ -58,5 +86,9 @@ public class TreeInterpreter {
             System.out.println(key + ": " + value);
 
         }
+    }
+
+    public boolean isTrue(Object value) {
+        return ((int) value) != 0;
     }
 }

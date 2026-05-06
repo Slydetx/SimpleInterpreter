@@ -1,3 +1,3 @@
 package com.tokenizer;
 
-public enum TokenType {VAR,EQ,LPAR,RPAR,PLUS,MULT,VAL,NIL}
+public enum TokenType {VAR, ASSIGN,LPAR,RPAR,PLUS,MULT,VAL, IF, THEN, ELSE, GT,LT,EQ, NIL}

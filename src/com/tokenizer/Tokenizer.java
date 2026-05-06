@@ -11,12 +11,21 @@ public class Tokenizer {
     private static final String AFTER_DIGIT_BEFORE_RPAR = "(?<=[\\w)])(?=\\))";
     private static final String SPLIT_PATTERN = AFTER_LPAR_BEFORE_DIGIT + "|" + AFTER_DIGIT_BEFORE_RPAR + "| ";
 
-    private static final Map<String, TokenType> KEYWORDS = Map.of(
-            "=", TokenType.EQ,
+    private static final Map<String, TokenType> OPERATORS = Map.of(
+            "=", TokenType.ASSIGN,
             "(", TokenType.LPAR,
             ")", TokenType.RPAR,
             "+", TokenType.PLUS,
-            "*", TokenType.MULT
+            "*", TokenType.MULT,
+            ">", TokenType.GT,
+            "<", TokenType.LT,
+            "==", TokenType.EQ
+    );
+
+    private static final Map<String, TokenType> KEYWORDS = Map.of(
+            "if", TokenType.IF,
+            "then", TokenType.THEN,
+            "else", TokenType.ELSE
     );
 
     public List<Token> tokenList = new ArrayList<>();
@@ -28,9 +37,17 @@ public class Tokenizer {
 
     private void mapTokens(String [] splitInput) {
         for (String word : splitInput) {
-            TokenType tokenType = KEYWORDS.get(word);
 
-            if (!isTokenFound(tokenType)) {
+            //check if it's an operator
+            TokenType tokenType = OPERATORS.get(word);
+
+            //check if it's a keyword
+            if (isTokenNotFound(tokenType)) {
+                tokenType = KEYWORDS.get(word);
+            }
+
+            //if still not found, then it's either a value or a variable
+            if (isTokenNotFound(tokenType)) {
                 tokenType = findDynamicTokenType(word);
             }
 
@@ -39,8 +56,8 @@ public class Tokenizer {
         }
     }
 
-    private boolean isTokenFound (TokenType tokenType) {
-        return tokenType != null;
+    private boolean isTokenNotFound(TokenType tokenType) {
+        return tokenType == null;
     }
 
     private TokenType findDynamicTokenType (String word) {

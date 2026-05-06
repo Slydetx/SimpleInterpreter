@@ -26,15 +26,39 @@ public class Parser {
 
         switch (currentToken.tokenType) {
             case VAR -> {
-                if (getNextTokenType() == TokenType.EQ) {
+                if (getNextTokenType() == TokenType.ASSIGN) {
                     AssignNode assignNode = new AssignNode();
                     assignNode.variable = consumeVariableAndEqualSign(currentToken);
                     assignNode.variableValue = parseExpression();
                     return assignNode;
-                } else return parseExpression(); //for the first example (assignments) this will never happen
+                } else throw new IllegalStateException("Invalid Assignment");
+            }
+
+            case IF -> {
+                IfNode ifNode = new IfNode();
+                ifNode.condition = consumeIf();
+                ifNode.thenExpression = consumeThen();
+                ifNode.elseExpression = consumeElse();
+                return ifNode;
             }
         }
         return null;
+    }
+
+    public InterpreterNode parseIf() {
+        throw new NullPointerException();
+    }
+
+    public InterpreterNode parseComparison () {
+        InterpreterNode leftNode = parseExpression();
+        Operator operator = consumeBinOperator(getCurrentToken());
+
+        if (operator == Operator.GT || operator == Operator.LT || operator == Operator.EQ) {
+            InterpreterNode rightNode = parseExpression();
+            return new BinaryOpNode(leftNode,rightNode,operator);
+        } else {
+            throw new IllegalStateException("Invalid comparison operator");
+        }
     }
 
     public InterpreterNode parseExpression() {
@@ -68,7 +92,7 @@ public class Parser {
         switch (currentToken.tokenType) {
             case TokenType.VAR -> {return consumeVariable(currentToken);}
             case TokenType.VAL -> {return consumeValue(currentToken);}
-            case TokenType.LPAR ->{return consumeParenthesis(currentToken);}
+            case TokenType.LPAR ->{return consumeParenthesis();}
             default -> {throw  new IllegalStateException("Unexpected value or variable token");
             }
         }
@@ -92,6 +116,21 @@ public class Parser {
                 : TokenType.NIL;
     }
 
+    private InterpreterNode consumeIf () {
+        this.index += 1;
+        return parseComparison();
+    }
+
+    private InterpreterNode consumeThen() {
+        this.index += 1;
+        return parseStatement();
+    }
+
+    private InterpreterNode consumeElse() {
+        this.index += 1;
+        return parseStatement();
+    }
+
     private VariableNode consumeVariableAndEqualSign(Token currentToken) {
         this.index += 2;
         return new VariableNode(currentToken);
@@ -102,6 +141,9 @@ public class Parser {
         switch (token.tokenType) {
             case TokenType.PLUS -> {return Operator.PLUS;}
             case  TokenType.MULT -> {return Operator.MULT;}
+            case  TokenType.GT -> {return Operator.GT;}
+            case  TokenType.LT -> {return Operator.LT;}
+            case  TokenType.EQ -> {return Operator.EQ;}
             default -> throw new IllegalArgumentException("Invalid binary operator: " + token.tokenType);
         }
     }
@@ -116,7 +158,7 @@ public class Parser {
         return new ValueNode(token.getNumericValue());
     }
 
-    private InterpreterNode consumeParenthesis(Token token) {
+    private InterpreterNode consumeParenthesis() {
         this.index += 1; //LPAR
         InterpreterNode evaluatedExpression = parseExpression();
         index += 1; //RPAR
