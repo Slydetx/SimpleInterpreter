@@ -9,4 +9,8 @@ public class VariableNode implements InterpreterNode {
         this.token = token;
     }
 
+    public String getVariableName () {
+        return this.token.tokenValue;
+    }
+
 }

@@ -29,7 +29,7 @@ public class Parser {
                 if (getNextTokenType() == TokenType.EQ) {
                     AssignNode assignNode = new AssignNode();
                     assignNode.variable = consumeVariableAndEqualSign(currentToken);
-                    assignNode.value = parseExpression();
+                    assignNode.variableValue = parseExpression();
                     return assignNode;
                 } else return parseExpression(); //for the first example (assignments) this will never happen
             }
@@ -89,7 +89,7 @@ public class Parser {
     private TokenType getNextTokenType() {
         return (this.index + 1 < tokenList.size())
                 ? tokenList.get(index + 1).tokenType
-                : null;
+                : TokenType.NIL;
     }
 
     private VariableNode consumeVariableAndEqualSign(Token currentToken) {

@@ -1,5 +1,4 @@
-
-import com.interpreterNodes.TreePrinter;
+import com.interpreter.TreeInterpreter;
 import com.tokenizer.Tokenizer;
 import parser.Parser;
 
@@ -15,6 +14,9 @@ public class Main {
         Parser parser = new Parser(tokenizer.tokenList);
         parser.parse();
 
+        TreeInterpreter treeInterpreter = new TreeInterpreter();
+        treeInterpreter.evaluate(parser.root);
+        treeInterpreter.printMemory();
 
     }
 

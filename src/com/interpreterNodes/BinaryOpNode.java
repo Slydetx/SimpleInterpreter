@@ -5,7 +5,6 @@ public class BinaryOpNode implements InterpreterNode {
     public InterpreterNode right;
     public Operator operator;
 
-    public BinaryOpNode(){}
     public BinaryOpNode (InterpreterNode left, InterpreterNode right, Operator operator){
         this.left = left;
         this.right = right;
