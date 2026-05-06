@@ -9,4 +9,8 @@ public class Token {
         this.tokenValue = tokenValue;
 
     }
+
+    public int getNumericValue() {
+        return Integer.parseInt(this.tokenValue);
+    }
 }

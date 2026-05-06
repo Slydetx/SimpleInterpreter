@@ -28,8 +28,7 @@ public class Parser {
             case VAR -> {
                 if (getNextTokenType() == TokenType.EQ) {
                     AssignNode assignNode = new AssignNode();
-                    assignNode.variable = new VariableNode(currentToken);
-                    index += 2;
+                    assignNode.variable = consumeVariableAndEqualSign(currentToken);
                     assignNode.value = parseExpression();
                     return assignNode;
                 } else return parseExpression(); //for the first example (assignments) this will never happen
@@ -39,114 +38,52 @@ public class Parser {
     }
 
     public InterpreterNode parseExpression() {
-        Token currentToken = getCurrentToken();
-        TokenType nextTokenType = getNextTokenType();
 
-        switch (getCurrentTokenType()) {
+        InterpreterNode leftNode = parseTerm();
 
-            case VAR, VAL -> {
-
-                //check if it'an operation or just a value/variable
-                if (nextTokenType == TokenType.PLUS ) {
-
-                    BinaryOpNode binaryOpNode = new BinaryOpNode();
-                    binaryOpNode.operator = Operator.PLUS;
-
-                    binaryOpNode.left = parseTerm();
-                    index += 1;
-                    binaryOpNode.right = parseTerm();
-                    return binaryOpNode;
-
-                } else if (nextTokenType == TokenType.MULT) {
-                    InterpreterNode leftNode = parseTerm();
-                    index += 1;
-                    InterpreterNode rightNode = parseTerm();
-                    return new BinaryOpNode(leftNode,rightNode,Operator.MULT);
-                }
-                else if (getCurrentTokenType() == TokenType.VAR) {
-                    return new VariableNode(currentToken);
-                } else {
-                    return new ValueNode(Integer.parseInt(currentToken.tokenValue));
-                }
-            }
+        while (getCurrentTokenType() == TokenType.PLUS) {
+            Operator operator = consumeBinOperator(getCurrentToken());
+            InterpreterNode rightNode = parseTerm();
+            leftNode = new BinaryOpNode(leftNode,rightNode,operator);
         }
-
-        return null;
+        return leftNode;
     }
 
     public InterpreterNode parseTerm () {
-        Token currentToken = getCurrentToken();
-        TokenType nextTokenType = getNextTokenType();
 
-        if (getCurrentTokenType() == null) {
-            return null;
+        InterpreterNode leftNode = parseFactor();
+
+        while (getCurrentTokenType() == TokenType.MULT) {
+            Operator operator = consumeBinOperator(getCurrentToken());
+            InterpreterNode rightNode = parseFactor();
+            leftNode = new BinaryOpNode(leftNode, rightNode, operator);
         }
+        return leftNode;
 
-        switch (getCurrentTokenType()) {
-            case LPAR -> {
-                return parseExpression();
-            }
-            case VAR, VAL -> {
-                if (nextTokenType == TokenType.MULT) {
-                    BinaryOpNode binaryOpNode = new BinaryOpNode();
-                    binaryOpNode.left = parseFactor();
-                    binaryOpNode.operator = Operator.MULT;
-                    index +=1;
-                    binaryOpNode.right = parseFactor();
-                    return binaryOpNode;
-
-                } else {
-                    return parseFactor();
-                }
-
-            }
-        }
-        return null;
     }
 
     public InterpreterNode parseFactor () {
 
-        Token currentToken = tokenList.get(index);
-
+        Token currentToken = getCurrentToken();
         switch (currentToken.tokenType) {
-            case VAR -> {
-
-                return new VariableNode(currentToken);
+            case TokenType.VAR -> {return consumeVariable(currentToken);}
+            case TokenType.VAL -> {return consumeValue(currentToken);}
+            case TokenType.LPAR ->{return consumeParenthesis(currentToken);}
+            default -> {throw  new IllegalStateException("Unexpected value or variable token");
             }
-            case VAL -> {
-                index +=1;
-                return new ValueNode(Integer.parseInt(currentToken.tokenValue));
-            }
-            case LPAR -> {
-                index += 1;
-                InterpreterNode evaluatedExpression = parseExpression();
-                index += 1; //for RPAR
-                return evaluatedExpression;
-
-                }
-            default -> {
-                System.out.println(getCurrentTokenType());
-                throw  new IllegalStateException("Unexpected value or variable token");
-            }
-            }
+        }
     }
 
     private Token getCurrentToken() {
         return (this.index < tokenList.size())
                 ? tokenList.get(index)
-                : null;
+                : new Token(TokenType.NIL,"nil");
     }
 
     private TokenType getCurrentTokenType() {
         return (this.index < tokenList.size())
                 ? tokenList.get(index).tokenType
-                : null;
-    }
-
-    private Token getNextToken() {
-        return (this.index + 1 < tokenList.size())
-                        ? tokenList.get(index + 1)
-                        : null;
+                : TokenType.NIL;
     }
 
     private TokenType getNextTokenType() {
@@ -154,4 +91,37 @@ public class Parser {
                 ? tokenList.get(index + 1).tokenType
                 : null;
     }
+
+    private VariableNode consumeVariableAndEqualSign(Token currentToken) {
+        this.index += 2;
+        return new VariableNode(currentToken);
+    }
+
+    private Operator consumeBinOperator(Token token) {
+        this.index += 1;
+        switch (token.tokenType) {
+            case TokenType.PLUS -> {return Operator.PLUS;}
+            case  TokenType.MULT -> {return Operator.MULT;}
+            default -> throw new IllegalArgumentException("Invalid binary operator: " + token.tokenType);
+        }
+    }
+
+    private VariableNode consumeVariable(Token token) {
+        this.index += 1;
+        return new VariableNode(token);
+    }
+
+    private ValueNode consumeValue(Token token) {
+        this.index += 1;
+        return new ValueNode(token.getNumericValue());
+    }
+
+    private InterpreterNode consumeParenthesis(Token token) {
+        this.index += 1; //LPAR
+        InterpreterNode evaluatedExpression = parseExpression();
+        index += 1; //RPAR
+        return evaluatedExpression;
+
+    }
+
 }

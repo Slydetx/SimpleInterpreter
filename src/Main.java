@@ -15,9 +15,6 @@ public class Main {
         Parser parser = new Parser(tokenizer.tokenList);
         parser.parse();
 
-        TreePrinter.print(parser.root);
-
-        //Debugger.debugTokenizer(tokenizer);
 
     }
 
