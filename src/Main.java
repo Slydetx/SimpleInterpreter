@@ -1,23 +1,13 @@
-import com.interpreter.TreeInterpreter;
-import com.tokenizer.Tokenizer;
-import parser.Parser;
+import com.Program;
 
 public class Main {
     public static void main(String[] args) {
         TerminalScanner terminalScanner = new TerminalScanner();
         terminalScanner.scanConsole();
 
-        Tokenizer tokenizer = new Tokenizer();
-
-        tokenizer.tokenize(terminalScanner.input);
-
-        Parser parser = new Parser(tokenizer.tokenList);
-        parser.parse();
-
-        TreeInterpreter treeInterpreter = new TreeInterpreter();
-        treeInterpreter.evaluate(parser.root);
-        treeInterpreter.printMemory();
-
+        if (!terminalScanner.input.isEmpty()) {
+            Program program = new Program();
+            program.execute(terminalScanner.input);
+        }
     }
-
 }

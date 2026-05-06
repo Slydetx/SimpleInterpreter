@@ -11,7 +11,7 @@ public class TerminalScanner {
         String currentTerminalInput = sc.nextLine();
         while (currentTerminalInput != "") {
 
-            fullTerminalInput.append(currentTerminalInput);
+            fullTerminalInput.append(currentTerminalInput + "\n");
             currentTerminalInput = sc.nextLine();
         }
 

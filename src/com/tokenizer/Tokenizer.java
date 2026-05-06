@@ -12,14 +12,14 @@ public class Tokenizer {
     private static final String SPLIT_PATTERN = AFTER_LPAR_BEFORE_DIGIT + "|" + AFTER_DIGIT_BEFORE_RPAR + "| ";
 
     private static final Map<String, TokenType> KEYWORDS = Map.of(
-            "=",      TokenType.EQ,
-            "(",      TokenType.LPAR,
-            ")",   TokenType.RPAR,
-            "+",  TokenType.PLUS,
+            "=", TokenType.EQ,
+            "(", TokenType.LPAR,
+            ")", TokenType.RPAR,
+            "+", TokenType.PLUS,
             "*", TokenType.MULT
     );
 
-    public List<Token> tokenList = new ArrayList<Token>();
+    public List<Token> tokenList = new ArrayList<>();
 
     public void tokenize(String input) {
         String [] splitInput = input.split(SPLIT_PATTERN);

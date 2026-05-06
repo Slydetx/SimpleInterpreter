@@ -10,6 +10,7 @@ public class TreeInterpreter {
     public Map<String,Integer> variablesToValues = new HashMap<>();
 
     public Object evaluate (InterpreterNode root) {
+
         switch (root) {
             case AssignNode node -> {return evaluateAssign(node);}
             case BinaryOpNode node -> {return evaluateBinOp(node);}
