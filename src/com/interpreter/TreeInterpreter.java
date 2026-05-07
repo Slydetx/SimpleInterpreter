@@ -12,6 +12,7 @@ public class TreeInterpreter {
     public Object evaluate (InterpreterNode root) {
 
         switch (root) {
+            case WhileNode node    -> {return evaluateWhile(node);}
             case IfNode node       -> {return evaluateIf(node);}
             case AssignNode node   -> {return evaluateAssign(node);}
             case BinaryOpNode node -> {return evaluateBinOp(node);}
@@ -19,6 +20,16 @@ public class TreeInterpreter {
             case VariableNode node -> {return evaluateVariable(node);}
             default -> throw new IllegalArgumentException("Unknown node type");
         }
+    }
+
+    private Void evaluateWhile (WhileNode node) {
+
+        while (isTrue(evaluate(node.condition))) {
+            for (InterpreterNode statement : node.body) {
+                evaluate(statement);
+            }
+        }
+        return null;
     }
 
     private Void evaluateIf(IfNode node) {

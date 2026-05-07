@@ -1,5 +1,6 @@
 package com;
 
+import com.debug.Debugger;
 import com.interpreter.TreeInterpreter;
 import com.tokenizer.Tokenizer;
 import parser.Parser;

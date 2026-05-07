@@ -4,6 +4,7 @@ import com.interpreterNodes.*;
 import com.tokenizer.Token;
 import com.tokenizer.TokenType;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Parser {
@@ -24,6 +25,7 @@ public class Parser {
 
         Token currentToken = this.getCurrentToken();
 
+        System.out.println("CURRENT TOKEN: " + currentToken.tokenType + ": " + currentToken.tokenValue);
         switch (currentToken.tokenType) {
             case VAR -> {
                 if (getNextTokenType() == TokenType.ASSIGN) {
@@ -41,12 +43,15 @@ public class Parser {
                 ifNode.elseExpression = consumeElse();
                 return ifNode;
             }
+
+            case WHILE -> {
+                WhileNode whileNode = new WhileNode();
+                whileNode.condition = consumeWhile();
+                whileNode.body = consumeWhileBody();
+                return whileNode;
+            }
         }
         return null;
-    }
-
-    public InterpreterNode parseIf() {
-        throw new NullPointerException();
     }
 
     public InterpreterNode parseComparison () {
@@ -101,34 +106,70 @@ public class Parser {
     private Token getCurrentToken() {
         return (this.index < tokenList.size())
                 ? tokenList.get(index)
-                : new Token(TokenType.NIL,"nil");
+                : null;
     }
 
     private TokenType getCurrentTokenType() {
         return (this.index < tokenList.size())
                 ? tokenList.get(index).tokenType
-                : TokenType.NIL;
+                : null;
     }
 
     private TokenType getNextTokenType() {
         return (this.index + 1 < tokenList.size())
                 ? tokenList.get(index + 1).tokenType
-                : TokenType.NIL;
+                : null;
     }
 
-    private InterpreterNode consumeIf () {
+    private InterpreterNode consumeCondition() {
         this.index += 1;
         return parseComparison();
     }
+    private InterpreterNode consumeIf () {
+        return consumeCondition();
+    }
 
-    private InterpreterNode consumeThen() {
+    private InterpreterNode consumeWhile () {
+        return consumeCondition();
+    }
+
+    private InterpreterNode consumeDo() {
+        return consumeBody();
+    }
+
+    private List<InterpreterNode> consumeCommas() {
+
+        List<InterpreterNode> commaStatements = new ArrayList<>();
+        while (getCurrentTokenType() == TokenType.COMMA) {
+            index +=1;
+            commaStatements.add(parseStatement());
+        }
+        return commaStatements;
+    }
+
+    private InterpreterNode consumeBody() {
         this.index += 1;
         return parseStatement();
+
+    }
+
+    private InterpreterNode consumeThen() {
+        return consumeBody();
     }
 
     private InterpreterNode consumeElse() {
-        this.index += 1;
-        return parseStatement();
+        return consumeBody();
+    }
+
+    private List<InterpreterNode> consumeWhileBody () {
+        List <InterpreterNode> whileBodyStatements = new ArrayList<>();
+
+        InterpreterNode doStatement = consumeDo();
+        whileBodyStatements.add(doStatement);
+        List <InterpreterNode> consumeCommas = consumeCommas();
+        whileBodyStatements.addAll(consumeCommas);
+
+        return whileBodyStatements;
     }
 
     private VariableNode consumeVariableAndEqualSign(Token currentToken) {
