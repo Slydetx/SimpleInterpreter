@@ -3,7 +3,7 @@ package com;
 import com.debug.Debugger;
 import com.interpreter.TreeInterpreter;
 import com.tokenizer.Tokenizer;
-import parser.Parser;
+import com.parser.Parser;
 
 public class Program {
 
@@ -15,9 +15,12 @@ public class Program {
             Tokenizer tokenizer = new Tokenizer();
 
             tokenizer.tokenize(statement);
+            Debugger.debugTokenizer(tokenizer);
 
             Parser parser = new Parser(tokenizer.tokenList);
             parser.parse();
+
+            Debugger.printTree(parser.root);
 
             treeInterpreter.evaluate(parser.root);
         }

@@ -34,7 +34,7 @@ public class Tokenizer {
             ")", TokenType.RPAR,
             ",", TokenType.COMMA,
             "{", TokenType.LBRACE,
-            "}", TokenType.LBRACE
+            "}", TokenType.RBRACE
     );
 
     private static final Map<String, TokenType> KEYWORDS = Map.of(

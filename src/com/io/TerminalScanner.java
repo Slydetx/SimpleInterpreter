@@ -1,3 +1,5 @@
+package com.io;
+
 import java.util.Scanner;
 
 public class TerminalScanner {
