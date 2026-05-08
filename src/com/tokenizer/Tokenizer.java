@@ -10,23 +10,31 @@ public class Tokenizer {
     private static final String AFTER_LPAR_BEFORE_ALPHANUM = "(?<=\\()(?=[\\w(])";
     private static final String AFTER_ALPHANUM_BEFORE_RPAR = "(?<=[\\w)])(?=\\))";
     private static final String AFTER_ALPHANUM_BEFORE_COMMA = "(?<=[\\w)])(?=,)";
+    private static final String AFTER_ALPHANUM_BEFORE_LPAR = "(?<=[\\w)])(?=\\()";
 
     private static final String SPLIT_PATTERN = new RegexBuilder()
             .splitAt(" ")
             .or(AFTER_LPAR_BEFORE_ALPHANUM)
             .or(AFTER_ALPHANUM_BEFORE_RPAR)
-            .or(AFTER_ALPHANUM_BEFORE_COMMA).toString();
+            .or(AFTER_ALPHANUM_BEFORE_COMMA)
+            .or(AFTER_ALPHANUM_BEFORE_LPAR).toString();
 
 
     private static final Map<String, TokenType> OPERATORS = Map.of(
             "=", TokenType.ASSIGN,
-            "(", TokenType.LPAR,
-            ")", TokenType.RPAR,
             "+", TokenType.PLUS,
             "*", TokenType.MULT,
             ">", TokenType.GT,
             "<", TokenType.LT,
             "==", TokenType.EQ
+    );
+
+    private static final Map<String, TokenType> PUNCTUATION = Map.of(
+            "(", TokenType.LPAR,
+            ")", TokenType.RPAR,
+            ",", TokenType.COMMA,
+            "{", TokenType.LBRACE,
+            "}", TokenType.LBRACE
     );
 
     private static final Map<String, TokenType> KEYWORDS = Map.of(
@@ -35,7 +43,8 @@ public class Tokenizer {
             "else", TokenType.ELSE,
             "while", TokenType.WHILE,
             "do", TokenType.DO,
-            ",", TokenType.COMMA
+            "fun", TokenType.FUN,
+            "return", TokenType.RETURN
     );
 
     public List<Token> tokenList = new ArrayList<>();
@@ -54,6 +63,11 @@ public class Tokenizer {
             //check if it's a keyword
             if (isTokenNotFound(tokenType)) {
                 tokenType = KEYWORDS.get(word);
+            }
+
+            //check if it's punctuation
+            if (isTokenNotFound(tokenType)) {
+                tokenType = PUNCTUATION.get(word);
             }
 
             //if still not found, then it's either a value or a variable

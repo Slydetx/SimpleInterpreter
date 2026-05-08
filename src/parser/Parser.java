@@ -25,15 +25,12 @@ public class Parser {
 
         Token currentToken = this.getCurrentToken();
 
-        System.out.println("CURRENT TOKEN: " + currentToken.tokenType + ": " + currentToken.tokenValue);
         switch (currentToken.tokenType) {
             case VAR -> {
-                if (getNextTokenType() == TokenType.ASSIGN) {
-                    AssignNode assignNode = new AssignNode();
-                    assignNode.variable = consumeVariableAndEqualSign(currentToken);
-                    assignNode.variableValue = parseExpression();
-                    return assignNode;
-                } else throw new IllegalStateException("Invalid Assignment");
+                AssignNode assignNode = new AssignNode();
+                assignNode.variable = consumeVariableAndEqualSign(currentToken);
+                assignNode.variableValue = parseExpression();
+                return assignNode;
             }
 
             case IF -> {
@@ -50,6 +47,22 @@ public class Parser {
                 whileNode.body = consumeWhileBody();
                 return whileNode;
             }
+
+            case FUN -> {
+                FunctionNode functionNode = new FunctionNode();
+                functionNode.name = consumeFunctionDefinition(currentToken);
+                functionNode.parameters = consumeParameters();
+                functionNode.body = consumeFunctionBody();
+                return functionNode;
+            }
+
+            case RETURN -> {
+                ReturnNode returnNode = new ReturnNode();
+                index += 1; //RETURN
+                returnNode.body = parseExpression();
+                return returnNode;
+            }
+
         }
         return null;
     }
@@ -93,14 +106,33 @@ public class Parser {
 
     public InterpreterNode parseFactor () {
 
+
+        if (isFunctionCall()) {
+
+            FunctionCallNode functionCallNode = new FunctionCallNode();
+            functionCallNode.name = consumeFunctionName(getCurrentToken());
+
+            List<ValueNode> arguments;
+            arguments = consumeArguments();
+            functionCallNode.arguments = arguments;
+
+            return functionCallNode;
+        }
+
         Token currentToken = getCurrentToken();
+
         switch (currentToken.tokenType) {
             case TokenType.VAR -> {return consumeVariable(currentToken);}
             case TokenType.VAL -> {return consumeValue(currentToken);}
             case TokenType.LPAR ->{return consumeParenthesis();}
-            default -> {throw  new IllegalStateException("Unexpected value or variable token");
+            default -> {throw  new IllegalStateException("Unexpected value or variable token: " + getCurrentTokenType());
             }
         }
+    }
+
+    private boolean isFunctionCall() {
+        return getCurrentTokenType() == TokenType.VAR && getNextTokenType() == TokenType.LPAR;
+
     }
 
     private Token getCurrentToken() {
@@ -170,6 +202,63 @@ public class Parser {
         whileBodyStatements.addAll(consumeCommas);
 
         return whileBodyStatements;
+    }
+
+    private VariableNode consumeFunctionDefinition(Token currentToken) {
+        this.index += 2; //fun + name
+        return new VariableNode(currentToken);
+    }
+
+    private String consumeFunctionName (Token currentToken) {
+        this.index += 1; // name
+        return currentToken.tokenValue;
+    }
+
+    private List<VariableNode> consumeParameters() {
+
+        this.index += 1; //LPAR
+        List<VariableNode> parameters = new ArrayList<>();
+
+        while (getCurrentTokenType() == TokenType.VAR) {
+
+            parameters.add(consumeVariable(getCurrentToken()));
+
+            if (getCurrentTokenType() == TokenType.COMMA) {
+                this.index += 1; //COMMA
+            }
+        }
+
+        this.index += 1; //RPAR
+        return parameters;
+    }
+
+    private List<ValueNode> consumeArguments() {
+
+        this.index += 1; //LPAR
+        List<ValueNode> arguments = new ArrayList<>();
+
+        while (getCurrentTokenType() == TokenType.VAL) {
+
+            arguments.add(consumeValue(getCurrentToken()));
+
+            if (getCurrentTokenType() == TokenType.COMMA) {
+                this.index += 1; //COMMA
+            }
+        }
+
+        this.index += 1; //RPAR
+        return arguments;
+    }
+
+    private ReturnNode consumeFunctionBody() {
+
+        //TODO: Extend this to return a List of InterpreterNodes later for multiple statements in the function body
+
+        index += 1; // LBRACE
+        ReturnNode returnNode = (ReturnNode) parseStatement();
+        index += 1; //RBRACE
+
+        return returnNode;
     }
 
     private VariableNode consumeVariableAndEqualSign(Token currentToken) {

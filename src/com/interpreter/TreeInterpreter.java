@@ -8,10 +8,12 @@ import java.util.Map;
 public class TreeInterpreter {
 
     public Map<String,Integer> variablesToValues = new HashMap<>();
+    public Map<String,FunctionNode> variablesToFunctions = new HashMap<>();
 
     public Object evaluate (InterpreterNode root) {
 
         switch (root) {
+            case FunctionNode node    -> {return evaluateFunction(node);}
             case WhileNode node    -> {return evaluateWhile(node);}
             case IfNode node       -> {return evaluateIf(node);}
             case AssignNode node   -> {return evaluateAssign(node);}
@@ -20,6 +22,13 @@ public class TreeInterpreter {
             case VariableNode node -> {return evaluateVariable(node);}
             default -> throw new IllegalArgumentException("Unknown node type");
         }
+    }
+
+    private Object evaluateFunction(FunctionNode node) {
+        variablesToFunctions.put(
+                node.name.getVariableName(),
+                node);
+        return null;
     }
 
     private Void evaluateWhile (WhileNode node) {
@@ -83,8 +92,17 @@ public class TreeInterpreter {
         return node.value;
     }
 
-    private int evaluateVariable(VariableNode node) {
-        return variablesToValues.get(node.getVariableName());
+    private Object evaluateVariable(VariableNode node) {
+         Integer variableValue = variablesToValues.get(node.getVariableName());
+
+         if (variableValue == null) {
+             FunctionNode functionNode = variablesToFunctions.get(node.getVariableName());
+             throw new IllegalArgumentException();
+
+         } else {
+             return variableValue;
+         }
+
     }
 
     public void printMemory() {
