@@ -13,16 +13,41 @@ public class TreeInterpreter {
     public Object evaluate (InterpreterNode root) {
 
         switch (root) {
-            case FunctionNode node    -> {return evaluateFunction(node);}
-            case WhileNode node    -> {return evaluateWhile(node);}
-            case IfNode node       -> {return evaluateIf(node);}
-            case AssignNode node   -> {return evaluateAssign(node);}
-            case BinaryOpNode node -> {return evaluateBinOp(node);}
-            case ValueNode node    -> {return evaluateValue(node);}
-            case VariableNode node -> {return evaluateVariable(node);}
-            default -> throw new IllegalArgumentException("Unknown node type");
+            case FunctionCallNode node -> {return evaluateFunctionCall(node);}
+            case FunctionNode node     -> {return evaluateFunction(node);}
+            case WhileNode node        -> {return evaluateWhile(node);}
+            case IfNode node           -> {return evaluateIf(node);}
+            case AssignNode node       -> {return evaluateAssign(node);}
+            case BinaryOpNode node     -> {return evaluateBinOp(node);}
+            case ValueNode node        -> {return evaluateValue(node);}
+            case VariableNode node     -> {return evaluateVariable(node);}
+            default -> throw new InterpreterException ("Unknown node type");
         }
     }
+
+    private Object evaluateFunctionCall(FunctionCallNode node) {
+
+        FunctionNode functionNode = variablesToFunctions.get(node.name);
+
+        for (int i = 0; i < node.arguments.size(); i++ ) {
+            VariableNode parameter = functionNode.parameters.get(i);
+            ValueNode argument = node.arguments.get(i);
+
+            if (parameter == null || argument == null ) {
+                throw new InterpreterException("Invalid Amount of parameters: Expected " + functionNode.parameters.size() + "but got " + node.arguments.size());
+            }
+
+            variablesToValues.put(parameter.getVariableName(), argument.value);
+        }
+
+        Integer evaluatedFunctionResult = (Integer) evaluate(functionNode.returnBody);
+
+        removeLocalFunctionVariables(functionNode);
+
+        return evaluatedFunctionResult ;
+
+    }
+
 
     private Object evaluateFunction(FunctionNode node) {
         variablesToFunctions.put(
@@ -80,7 +105,7 @@ public class TreeInterpreter {
             }
 
             case Operator.EQ -> {
-                boolean equal = (Integer) evaluate(node.left) == (Integer) evaluate(node.right);
+                boolean equal = evaluate(node.left) == evaluate(node.right);
                 return equal ? 1 : 0;
             }
 
@@ -96,8 +121,8 @@ public class TreeInterpreter {
          Integer variableValue = variablesToValues.get(node.getVariableName());
 
          if (variableValue == null) {
-             FunctionNode functionNode = variablesToFunctions.get(node.getVariableName());
-             throw new IllegalArgumentException();
+
+             throw new InterpreterException("Invalid variable: " + node.getVariableName());
 
          } else {
              return variableValue;
@@ -115,6 +140,11 @@ public class TreeInterpreter {
             System.out.println(key + ": " + value);
 
         }
+    }
+
+    public void removeLocalFunctionVariables(FunctionNode functionNode) {
+        for (VariableNode parameter : functionNode.parameters)
+            variablesToValues.remove(parameter.getVariableName());
     }
 
     public boolean isTrue(Object value) {

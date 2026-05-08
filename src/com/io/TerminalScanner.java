@@ -3,7 +3,7 @@ package com.io;
 import java.util.Scanner;
 
 public class TerminalScanner {
-    String input;
+    private String input;
 
     public void scanConsole() {
 
@@ -19,5 +19,9 @@ public class TerminalScanner {
 
         sc.close();
         this.input = fullTerminalInput.toString();
+    }
+
+    public String getInput() {
+        return this.input;
     }
 }

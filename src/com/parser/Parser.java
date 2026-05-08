@@ -52,17 +52,16 @@ public class Parser {
 
             case FUN -> {
                 FunctionNode functionNode = new FunctionNode();
-                functionNode.name = parseFunctionDefinition(currentToken);
+                functionNode.name = parseFunctionDefinition();
                 functionNode.parameters = parseParameters();
-                functionNode.body = parseFunctionBody();
+                functionNode.returnBody = parseFunctionBody();
                 return functionNode;
             }
 
             case RETURN -> {
-                ReturnNode returnNode = new ReturnNode();
                 consumer.matchAndConsume(TokenType.RETURN);
-                returnNode.body = expressionParser.parseExpression();
-                return returnNode;
+                return expressionParser.parseExpression();
+
             }
             default -> throw new ParseException("Invalid statement");
 
@@ -122,9 +121,10 @@ public class Parser {
     }
 
 
-    private VariableNode parseFunctionDefinition(Token currentToken) {
+    private VariableNode parseFunctionDefinition() {
+
         consumer.matchAndConsume(TokenType.FUN);
-        return expressionParser.parseVariable(currentToken);
+        return expressionParser.parseVariable(consumer.getCurrentToken());
     }
 
     private List<VariableNode> parseParameters() {
@@ -146,15 +146,15 @@ public class Parser {
     }
 
 
-    private ReturnNode parseFunctionBody() {
+    private InterpreterNode parseFunctionBody() {
 
         //TODO: Extend this to return a List of InterpreterNodes later for multiple statements in the function body
 
         consumer.matchAndConsume(TokenType.LBRACE);
-        ReturnNode returnNode = (ReturnNode) parseStatement();
+        InterpreterNode functionBody = parseStatement();
         consumer.matchAndConsume(TokenType.RBRACE);
 
-        return returnNode;
+        return functionBody;
     }
 
     private VariableNode parseVariableAndAssignSign(Token currentToken) {

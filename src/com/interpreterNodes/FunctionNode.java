@@ -5,6 +5,6 @@ import java.util.List;
 public class FunctionNode implements InterpreterNode {
     public VariableNode name;
     public List<VariableNode> parameters;
-    public ReturnNode body;
+    public InterpreterNode returnBody;
 
 }
