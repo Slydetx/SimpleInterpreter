@@ -77,8 +77,7 @@ public class ExpressionParser {
             case TokenType.VAR -> { return parseVariable(currentToken); }
             case TokenType.VAL -> { return parseValue(currentToken); }
             case TokenType.LPAR ->{ return parseParenthesis(); }
-            default -> {throw  new ParseException ("Unexpected value or variable token: " + consumer.getCurrentTokenType());
-            }
+            default -> throw  new ParseException ("Unexpected value or variable token: " + consumer.getCurrentTokenType());
         }
     }
 

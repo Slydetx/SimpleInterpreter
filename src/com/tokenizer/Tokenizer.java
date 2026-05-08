@@ -7,19 +7,6 @@ import java.lang.Character;
 
 public class Tokenizer {
 
-    private static final String AFTER_LPAR_BEFORE_ALPHANUM = "(?<=\\()(?=[\\w(])";
-    private static final String AFTER_ALPHANUM_BEFORE_RPAR = "(?<=[\\w)])(?=\\))";
-    private static final String AFTER_ALPHANUM_BEFORE_COMMA = "(?<=[\\w)])(?=,)";
-    private static final String AFTER_ALPHANUM_BEFORE_LPAR = "(?<=[\\w)])(?=\\()";
-
-    private static final String SPLIT_PATTERN = new RegexBuilder()
-            .splitAt(" ")
-            .or(AFTER_LPAR_BEFORE_ALPHANUM)
-            .or(AFTER_ALPHANUM_BEFORE_RPAR)
-            .or(AFTER_ALPHANUM_BEFORE_COMMA)
-            .or(AFTER_ALPHANUM_BEFORE_LPAR).toString();
-
-
     private static final Map<String, TokenType> OPERATORS = Map.of(
             "=", TokenType.ASSIGN,
             "+", TokenType.PLUS,
@@ -50,35 +37,71 @@ public class Tokenizer {
     public List<Token> tokenList = new ArrayList<>();
 
     public void tokenize(String input) {
-        String [] splitInput = input.split(SPLIT_PATTERN);
-        mapTokens(splitInput);
-    }
+        char[] chars = input.toCharArray();
+        int charIterator = 0;
 
-    private void mapTokens(String [] splitInput) {
-        for (String word : splitInput) {
+        while (charIterator < chars.length) {
 
-            //check if it's an operator
-            TokenType tokenType = OPERATORS.get(word);
+            if (charIterator > 0)
+                System.out.print(chars[charIterator- 1]);
 
-            //check if it's a keyword
-            if (isTokenNotFound(tokenType)) {
-                tokenType = KEYWORDS.get(word);
+            if (Character.isLetter(chars[charIterator]) || chars[charIterator] == '_') { //allows names to start with '_'
+                StringBuilder word = new StringBuilder();
+
+                while (Character.isLetterOrDigit(chars[charIterator]) || chars[charIterator] == '_') {
+                    word.append(chars[charIterator]);
+                    charIterator += 1;
+                }
+
+                mapToken(word.toString());
+
+            } else if (Character.isDigit(chars[charIterator])) {
+                StringBuilder number = new StringBuilder();
+
+                while (Character.isLetterOrDigit(chars[charIterator])) {
+                    number.append(chars[charIterator]);
+                    charIterator += 1;
+                }
+
+                mapToken(number.toString());
+
+            } else if (chars[charIterator] == ' ' ) {
+
+                charIterator += 1;
+
+            } else {
+
+                mapToken(Character.toString(chars[charIterator]));
+                charIterator += 1;
             }
 
-            //check if it's punctuation
-            if (isTokenNotFound(tokenType)) {
-                tokenType = PUNCTUATION.get(word);
-            }
-
-            //if still not found, then it's either a value or a variable
-            if (isTokenNotFound(tokenType)) {
-                tokenType = findDynamicTokenType(word);
-            }
-
-            Token token = new Token(tokenType,word);
-            this.tokenList.add(token);
         }
     }
+
+    private void mapToken(String rawToken) {
+
+        //check if it's an operator
+        TokenType tokenType = OPERATORS.get(rawToken);
+
+        //check if it's a keyword
+        if (isTokenNotFound(tokenType)) {
+            tokenType = KEYWORDS.get(rawToken);
+        }
+
+        //check if it's punctuation
+        if (isTokenNotFound(tokenType)) {
+            tokenType = PUNCTUATION.get(rawToken);
+        }
+
+        //if still not found, then it's either a value or a variable
+        if (isTokenNotFound(tokenType)) {
+            tokenType = findDynamicTokenType(rawToken);
+        }
+
+        Token token = new Token(tokenType, rawToken);
+        this.tokenList.add(token);
+    }
+
 
     private boolean isTokenNotFound(TokenType tokenType) {
         return tokenType == null;

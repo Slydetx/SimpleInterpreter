@@ -7,12 +7,12 @@ public class Main {
     public static void main(String[] args) {
 
 
-        /*TextFileReader textFileReader = new TextFileReader("src/com/io/textEditor.txt");
+        TextFileReader textFileReader = new TextFileReader("src/com/io/textEditor.txt");
         textFileReader.readFile();
         Program program = new Program();
-        program.execute(textFileReader.getContent());*/
+        program.execute(textFileReader.getContent());
 
-
+        /*
         TerminalScanner terminalScanner = new TerminalScanner();
         terminalScanner.scanConsole();
 
@@ -20,6 +20,6 @@ public class Main {
             Program program = new Program();
             program.execute(terminalScanner.getInput());
         }
-
+        */
     }
 }
