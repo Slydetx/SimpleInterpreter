@@ -13,7 +13,8 @@ public class ExpressionParser {
     private static final Set<Operator> COMPARISON_TOKENS = Set.of(
             Operator.GT,
             Operator.LT,
-            Operator.EQ
+            Operator.EQ,
+            Operator.LT_EQ
     );
 
     TokenConsumer consumer;
@@ -35,8 +36,8 @@ public class ExpressionParser {
 
         InterpreterNode leftNode = parseTerm();
 
-        while (consumer.getCurrentTokenType() == TokenType.PLUS) {
-            Operator operator = consumer.consumeBinOperator(Set.of(Operator.PLUS)); //useless check, but needed for comparison operators... maybe split functions? But useful if introducing Operator.MINUS later
+        while (consumer.getCurrentTokenType() == TokenType.PLUS || consumer.getCurrentTokenType() == TokenType.MINUS) {
+            Operator operator = consumer.consumeBinOperator(Set.of(Operator.PLUS,Operator.MINUS));
             InterpreterNode rightNode = parseTerm();
             leftNode = new BinaryOpNode(leftNode,rightNode,operator);
         }
@@ -64,7 +65,7 @@ public class ExpressionParser {
             FunctionCallNode functionCallNode = new FunctionCallNode();
             functionCallNode.name = consumer.consumeAndGetFunctionName(consumer.getCurrentToken());
 
-            List<ValueNode> arguments;
+            List<InterpreterNode> arguments;
             arguments = parseArguments();
             functionCallNode.arguments = arguments;
 
@@ -89,14 +90,14 @@ public class ExpressionParser {
 
     }
 
-    private List<ValueNode> parseArguments() {
+    private List<InterpreterNode> parseArguments() {
 
         consumer.matchAndConsume(TokenType.LPAR);
-        List<ValueNode> arguments = new ArrayList<>();
+        List<InterpreterNode> arguments = new ArrayList<>();
 
-        while (consumer.getCurrentTokenType() == TokenType.VAL) {
+        while (consumer.getCurrentTokenType() == TokenType.VAL || consumer.getCurrentTokenType() == TokenType.VAR) {
 
-            arguments.add(parseValue(consumer.getCurrentToken()));
+            arguments.add(parseExpression());
 
             if (consumer.getCurrentTokenType() == TokenType.COMMA) {
                 consumer.matchAndConsume(TokenType.COMMA);

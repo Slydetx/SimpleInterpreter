@@ -12,10 +12,12 @@ public class TokenConsumer {
 
     private static final Map<TokenType, Operator> TYPE_OPERATOR_MAP = Map.of(
             TokenType.PLUS, Operator.PLUS,
+            TokenType.MINUS, Operator.MINUS,
             TokenType.MULT, Operator.MULT,
             TokenType.GT, Operator.GT,
             TokenType.LT, Operator.LT,
-            TokenType.EQ, Operator.EQ
+            TokenType.EQ, Operator.EQ,
+            TokenType.LT_EQ, Operator.LT_EQ
     );
 
     List<Token> tokenList;

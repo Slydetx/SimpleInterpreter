@@ -11,12 +11,13 @@ public class Program {
         TreeInterpreter treeInterpreter = new TreeInterpreter();
 
         for (String statement : statements) {
-            Tokenizer tokenizer = new Tokenizer();
+            Tokenizer tokenizer = new Tokenizer(statement);
 
-            tokenizer.tokenize(statement);
+            tokenizer.tokenize();
 
             Parser parser = new Parser(tokenizer.tokenList);
             parser.parse();
+
 
             treeInterpreter.evaluate(parser.root);
         }

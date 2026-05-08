@@ -7,113 +7,50 @@ import java.lang.Character;
 
 public class Tokenizer {
 
-    private static final Map<String, TokenType> OPERATORS = Map.of(
-            "=", TokenType.ASSIGN,
-            "+", TokenType.PLUS,
-            "*", TokenType.MULT,
-            ">", TokenType.GT,
-            "<", TokenType.LT,
-            "==", TokenType.EQ
-    );
+    //TODO: Implement Division, !=, >=
 
-    private static final Map<String, TokenType> PUNCTUATION = Map.of(
-            "(", TokenType.LPAR,
-            ")", TokenType.RPAR,
-            ",", TokenType.COMMA,
-            "{", TokenType.LBRACE,
-            "}", TokenType.RBRACE
-    );
-
-    private static final Map<String, TokenType> KEYWORDS = Map.of(
-            "if", TokenType.IF,
-            "then", TokenType.THEN,
-            "else", TokenType.ELSE,
-            "while", TokenType.WHILE,
-            "do", TokenType.DO,
-            "fun", TokenType.FUN,
-            "return", TokenType.RETURN
-    );
+    private InputConsumer inputConsumer;
+    private TokenBuilder tokenBuilder;
+    private TokenClassifier tokenClassifier;
 
     public List<Token> tokenList = new ArrayList<>();
 
-    public void tokenize(String input) {
-        char[] chars = input.toCharArray();
-        int charIterator = 0;
+    public Tokenizer (String input) {
+        this.inputConsumer = new InputConsumer(input);
+        this.tokenBuilder = new TokenBuilder(this.inputConsumer);
+        this.tokenClassifier = new TokenClassifier(this.tokenList);
+    }
 
-        while (charIterator < chars.length) {
+    public void tokenize() {
 
-            if (charIterator > 0)
-                System.out.print(chars[charIterator- 1]);
+        while (inputConsumer.currentPosition() <= inputConsumer.lastPosition()) {
 
-            if (Character.isLetter(chars[charIterator]) || chars[charIterator] == '_') { //allows names to start with '_'
-                StringBuilder word = new StringBuilder();
+            if (inputConsumer.currentIsKeywordOrVariable()) {
 
-                while (Character.isLetterOrDigit(chars[charIterator]) || chars[charIterator] == '_') {
-                    word.append(chars[charIterator]);
-                    charIterator += 1;
-                }
+                StringBuilder word = tokenBuilder.buildKeyWordOrVariable();
+                tokenClassifier.mapToken(word.toString());
 
-                mapToken(word.toString());
+            } else if (inputConsumer.currentIsNumber()) {
 
-            } else if (Character.isDigit(chars[charIterator])) {
-                StringBuilder number = new StringBuilder();
+                StringBuilder number = tokenBuilder.buildNumber();
+                tokenClassifier.mapToken(number.toString());
 
-                while (Character.isLetterOrDigit(chars[charIterator])) {
-                    number.append(chars[charIterator]);
-                    charIterator += 1;
-                }
+            } else if (inputConsumer.currentIsWhiteSpace()) {
 
-                mapToken(number.toString());
-
-            } else if (chars[charIterator] == ' ' ) {
-
-                charIterator += 1;
+                inputConsumer.consumeCurrentChar();
 
             } else {
 
-                mapToken(Character.toString(chars[charIterator]));
-                charIterator += 1;
+                if (inputConsumer.nextTokenIsComparisonOperator()) {
+
+                    tokenClassifier.mapToken(inputConsumer.getTwoChars());
+
+                } else {
+
+                    tokenClassifier.mapToken(Character.toString(inputConsumer.consumeCurrentChar()));
+                }
             }
 
         }
-    }
-
-    private void mapToken(String rawToken) {
-
-        //check if it's an operator
-        TokenType tokenType = OPERATORS.get(rawToken);
-
-        //check if it's a keyword
-        if (isTokenNotFound(tokenType)) {
-            tokenType = KEYWORDS.get(rawToken);
-        }
-
-        //check if it's punctuation
-        if (isTokenNotFound(tokenType)) {
-            tokenType = PUNCTUATION.get(rawToken);
-        }
-
-        //if still not found, then it's either a value or a variable
-        if (isTokenNotFound(tokenType)) {
-            tokenType = findDynamicTokenType(rawToken);
-        }
-
-        Token token = new Token(tokenType, rawToken);
-        this.tokenList.add(token);
-    }
-
-
-    private boolean isTokenNotFound(TokenType tokenType) {
-        return tokenType == null;
-    }
-
-    private TokenType findDynamicTokenType (String word) {
-        boolean wordIsADigit = true;
-
-        for (char character : word.toCharArray()) {
-            wordIsADigit &= Character.isDigit(character);
-        }
-
-        return wordIsADigit ? TokenType.VAL : TokenType.VAR;
     }
 }

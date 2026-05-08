@@ -31,7 +31,7 @@ public class TreeInterpreter {
 
         for (int i = 0; i < node.arguments.size(); i++ ) {
             VariableNode parameter = functionNode.parameters.get(i);
-            ValueNode argument = node.arguments.get(i);
+            ValueNode argument = (ValueNode) node.arguments.get(i);
 
             if (parameter == null || argument == null ) {
                 throw new InterpreterException("Invalid Amount of parameters: Expected " + functionNode.parameters.size() + "but got " + node.arguments.size());
