@@ -4,11 +4,20 @@ import com.interpreterNodes.*;
 
 import java.util.*;
 
+/**
+ * Evaluates an Abstract Syntax Tree by recursively visiting each node via evaluate().<br>
+ * Runtime state (variables, functions, call stack) is managed by InterpreterMemory.
+ */
 public class TreeInterpreter {
 
     public InterpreterMemory memory = new InterpreterMemory();
 
-    public Object evaluate(InterpreterNode root) {
+    /**
+     * Evaluates a single AST node and returns its result.
+     * Side-effect statements return null.
+     * Value-producing nodes return an Integer.
+     */
+     public Object evaluate(InterpreterNode root) {
 
         switch (root) {
             case FunctionCallNode node -> { return evaluateFunctionCall(node); }
@@ -23,6 +32,7 @@ public class TreeInterpreter {
         }
     }
 
+    /** Resolves the function, evaluates arguments, pushes a stack frame, and executes the body. */
     private Object evaluateFunctionCall(FunctionCallNode node) {
 
         FunctionNode functionNode = memory.getFunction(node.name);
@@ -34,6 +44,7 @@ public class TreeInterpreter {
         return executeFunction(functionNode);
     }
 
+    /** Evaluates each argument expression and maps it to its corresponding parameter name. */
     private Map<String, Object> evaluatesArguments(FunctionNode functionNode, FunctionCallNode callNode) {
         Map<String, Object> parametersToArguments = new HashMap<>();
 
@@ -51,6 +62,11 @@ public class TreeInterpreter {
         return parametersToArguments;
     }
 
+    /**
+     * Executes the function body statement by statement.
+     * Returns if a ReturnException is caught.
+     * The stack frame is always popped in the 'finally' block.
+     */
     private Object executeFunction(FunctionNode functionNode) {
 
         Integer evaluatedFunctionResult = null;
@@ -72,11 +88,13 @@ public class TreeInterpreter {
     }
 
 
+    /** Registers a function definition in memory. */
     private Object evaluateFunction(FunctionNode node) {
-        memory.defineFunction(node.name.getVariableName(),node);
+        memory.defineFunction(node);
         return null;
     }
 
+    /** Evaluates the condition and executes the appropriate branch, returning its result. */
     private Void evaluateWhile(WhileNode node) {
 
         while (isTrue(evaluate(node.condition))) {
@@ -99,6 +117,7 @@ public class TreeInterpreter {
         return null;
     }
 
+    /** Evaluates the condition and executes the appropriate branch, returning its result. */
     private Object evaluateIf(IfNode node) {
         boolean isConditionTrue = isTrue(evaluate(node.condition));
 
@@ -110,11 +129,13 @@ public class TreeInterpreter {
 
     }
 
+    /** Evaluates the right-hand side and stores the result in memory. */
     private Void evaluateAssign(AssignNode node) {
         memory.setVariable(node.variable.getVariableName(), evaluate(node.variableValue));
         return null;
     }
 
+    /** Evaluates both operands and applies the binary operator. */
     private int evaluateBinOp(BinaryOpNode node) {
 
         switch (node.operator) {
@@ -168,19 +189,20 @@ public class TreeInterpreter {
         }
     }
 
-    private int evaluateValue(ValueNode node) {
+    /** Returns the integer value stored in the node. */
+    private Integer evaluateValue(ValueNode node) {
         return node.value;
     }
 
+    /** Looks up the variable value in memory. */
     private Object evaluateVariable(VariableNode node) {
 
         String variableName = node.getVariableName();
-        Integer variableValue = memory.getVariableValue(variableName);
 
-        return variableValue;
+        return memory.getVariableValue(variableName);
     }
 
-    boolean isTrue(Object value) {
+    private boolean isTrue(Object value) {
         return ((int) value) != 0;
     }
 }

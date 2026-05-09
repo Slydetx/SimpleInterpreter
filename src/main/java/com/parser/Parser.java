@@ -7,7 +7,16 @@ import com.tokenizer.TokenType;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Parser {
+/**
+ * Builds an Abstract Syntax Tree from a flat list of tokens using recursive descent parsing. <br>
+ * <br>
+ * Entry point is parse(), which parses a single statement and stores the result in 'root'. <br>
+ * Called once per line by Program — the interpreter then evaluates each root node in order.
+ * <br>
+ * <br>
+ * Expression parsing is delegated to ExpressionParser.
+ */
+ public class Parser {
 
     TokenConsumer consumer;
     ExpressionParser expressionParser;
@@ -19,13 +28,18 @@ public class Parser {
 
     }
 
+    /** Parses a single statement and stores the resulting AST node in 'root'. */
     public void parse() {
         this.root = parseStatement();
     }
 
-    public InterpreterNode parseStatement() {
+    /**
+     * Determines the statement type from the current token and delegates to the
+     * appropriate parse method. Throws ParseException on unrecognized input.
+     */
+    private InterpreterNode parseStatement() {
 
-        Token currentToken = consumer.getCurrentToken();
+        Token currentToken = consumer.peekCurrentToken();
         switch (currentToken.tokenType) {
             case VAR -> {
                 AssignNode assignNode = new AssignNode();
@@ -67,6 +81,7 @@ public class Parser {
         }
     }
 
+    /** Consumes the given keyword token and parses the following comparison expression. */
     private InterpreterNode parseCondition(TokenType tokenType) {
         consumer.matchAndConsume(tokenType);
         return expressionParser.parseComparison();
@@ -79,6 +94,7 @@ public class Parser {
         return parseCondition(TokenType.WHILE);
     }
 
+    /** Consumes the given keyword token and parses the following statement as a body. */
     private InterpreterNode consumeBody(TokenType tokenType) {
         consumer.matchAndConsume(tokenType);
         return parseStatement();
@@ -97,16 +113,21 @@ public class Parser {
         return consumeBody(TokenType.ELSE);
     }
 
+    /** Parses additional comma-separated statements. */
     private List<InterpreterNode> parseCommaStatements() {
 
         List<InterpreterNode> commaStatements = new ArrayList<>();
-        while (consumer.getCurrentTokenType() == TokenType.COMMA) {
+        while (consumer.peekCurrentTokenType() == TokenType.COMMA) {
             consumer.matchAndConsume(TokenType.COMMA);
             commaStatements.add(parseStatement());
         }
         return commaStatements;
     }
 
+    /**
+     * Parses the while body: the first statement after 'do' followed by
+     * any comma-separated statements.
+     */
     private List<InterpreterNode> parseWhileBody() {
 
         List <InterpreterNode> whileBodyStatements = new ArrayList<>();
@@ -119,23 +140,24 @@ public class Parser {
         return whileBodyStatements;
     }
 
-
+    /** Consumes 'fun' and parses the function name as a VariableNode. */
     private VariableNode parseFunctionDefinition() {
 
         consumer.matchAndConsume(TokenType.FUN);
-        return expressionParser.parseVariable(consumer.getCurrentToken());
+        return expressionParser.parseVariable(consumer.peekCurrentToken());
     }
 
+    /** Parses a comma-separated parameter list enclosed in parentheses. */
     private List<VariableNode> parseParameters() {
 
         consumer.matchAndConsume(TokenType.LPAR);
 
         List<VariableNode> parameters = new ArrayList<>();
-        while (consumer.getCurrentTokenType() == TokenType.VAR) {
+        while (consumer.peekCurrentTokenType() == TokenType.VAR) {
 
-            parameters.add(expressionParser.parseVariable(consumer.getCurrentToken()));
+            parameters.add(expressionParser.parseVariable(consumer.peekCurrentToken()));
 
-            if (consumer.getCurrentTokenType() == TokenType.COMMA) {
+            if (consumer.peekCurrentTokenType() == TokenType.COMMA) {
                 consumer.matchAndConsume(TokenType.COMMA);
             }
         }
@@ -144,7 +166,7 @@ public class Parser {
         return parameters;
     }
 
-
+    /** Parses the function body enclosed in braces as a list of comma-separated statements. */
     private List<InterpreterNode> parseFunctionBody() {
 
         List<InterpreterNode> bodyStatements = new ArrayList<>();
@@ -156,6 +178,7 @@ public class Parser {
         return bodyStatements;
     }
 
+    /** Parses a variable name followed by an assignment sign. */
     private VariableNode parseVariableAndAssignSign(Token currentToken) {
         VariableNode variableNode = expressionParser.parseVariable(currentToken);
         consumer.matchAndConsume(TokenType.ASSIGN);

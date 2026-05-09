@@ -1,8 +1,6 @@
 package com;
 
 import com.interpreter.InterpreterException;
-import com.parser.ParseException;
-import com.parser.Parser;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;

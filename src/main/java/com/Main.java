@@ -1,17 +1,14 @@
 package com;
 
 import com.io.TerminalScanner;
-import com.io.TextFileReader;
 
+/**
+ * Entry point of the interpreter.
+ * Reads a program from standard input and executes it.
+ * Input is terminated by a blank line.
+ */
 public class Main {
     public static void main(String[] args) {
-
-        /*
-        TextFileReader textFileReader = new TextFileReader("src/main/java/com/io/textEditor.txt");
-        textFileReader.readFile();
-        Program program = new Program();
-        program.execute(textFileReader.getContent());
-        */
 
         TerminalScanner terminalScanner = new TerminalScanner();
         terminalScanner.scanConsole();

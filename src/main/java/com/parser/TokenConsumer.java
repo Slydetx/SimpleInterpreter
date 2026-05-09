@@ -8,7 +8,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class TokenConsumer {
+/**
+ * Provides controlled access to the token list for the parser. <br>
+ * Maintains a current index that advances as tokens are consumed.
+ */
+class TokenConsumer {
 
     private static final Map<TokenType, Operator> TYPE_OPERATOR_MAP = Map.of(
             TokenType.PLUS, Operator.PLUS,
@@ -26,66 +30,77 @@ public class TokenConsumer {
     List<Token> tokenList;
     int index = 0;
 
-    public TokenConsumer (List<Token> tokenList) {
+    TokenConsumer (List<Token> tokenList) {
         this.tokenList = tokenList;
     }
 
-    Token getCurrentToken() {
+    /** Returns the current token without advancing, or null if past the end of the token list. */
+    Token peekCurrentToken() {
         return (this.index < tokenList.size())
                 ? tokenList.get(index)
                 : null;
     }
 
-    TokenType getCurrentTokenType() {
+    /** Returns the current token type without advancing, or null if past the end of the token list. */
+    TokenType peekCurrentTokenType() {
         return (this.index < tokenList.size())
                 ? tokenList.get(index).tokenType
                 : null;
     }
 
-    TokenType getNextTokenType() {
+    /** Returns the next token type without advancing, or null if past the end. */
+    TokenType peekNextTokenType() {
         return (this.index + 1 < tokenList.size())
                 ? tokenList.get(index + 1).tokenType
                 : null;
     }
 
+    /** Returns true if the current token is a variable followed by '(' indicating a function call. */
     boolean checkIsFunctionCall() {
-        return getCurrentTokenType() == TokenType.VAR && getNextTokenType() == TokenType.LPAR;
+        return peekCurrentTokenType() == TokenType.VAR && peekNextTokenType() == TokenType.LPAR;
 
     }
 
-
     private boolean matchesCurrent(TokenType tokenType) {
-        return getCurrentTokenType() == tokenType;
+        return peekCurrentTokenType() == tokenType;
     }
 
     private void consume () {
         index += 1;
     }
 
-    void matchAndConsume (TokenType tokenType) {
+    /**
+     * Asserts the current token matches the expected type, then advances.
+     * @throws ParseException if the current token does not match the expected type.
+     */
+    void matchAndConsume(TokenType tokenType) {
 
         if (matchesCurrent(tokenType)) consume();
         else {
-            throw new ParseException("Expected " + getCurrentTokenType() + " but got " + tokenType + " at position " + index);
+            throw new ParseException("Expected " + peekCurrentTokenType() + " but got " + tokenType + " at position " + index);
         }
 
     }
 
+    /**
+     * Asserts the current token is a valid binary operator, advances, and returns the corresponding Operator enum value.
+     * @throws ParseException if the current token is not in the expected operator set.
+     */
     Operator consumeBinOperator(Set<TokenType> expectedOperators) {
 
-        Operator operator = TYPE_OPERATOR_MAP.get(getCurrentTokenType());
+        Operator operator = TYPE_OPERATOR_MAP.get(peekCurrentTokenType());
 
-        if (operator == null || !expectedOperators.contains(getCurrentTokenType())) {
-            throw new ParseException("Invalid operator: " + getCurrentTokenType());
+        if (operator == null || !expectedOperators.contains(peekCurrentTokenType())) {
+            throw new ParseException("Invalid operator: " + peekCurrentTokenType());
         }
 
         consume();
 
         return operator;
     }
-
+    /** Advances past the function name token and returns its string value. */
         String consumeAndGetFunctionName (Token currentToken) {
-        this.index += 1; // name
+        matchAndConsume(TokenType.VAR);
         return currentToken.tokenValue;
     }
 }

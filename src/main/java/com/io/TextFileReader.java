@@ -4,6 +4,10 @@ import java.nio.file.Files;
 
 import java.nio.file.Path;
 
+/**
+ * Reads the contents of a text file into a string.
+ * Used to load a program from a file path instead of standard input.
+ */
 public class TextFileReader {
 
     private final String source;

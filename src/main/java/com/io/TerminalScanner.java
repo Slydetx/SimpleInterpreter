@@ -2,6 +2,9 @@ package com.io;
 
 import java.util.Scanner;
 
+/**
+ * Reads a multi-line program from standard input until a blank line.
+ */
 public class TerminalScanner {
     private String input;
 

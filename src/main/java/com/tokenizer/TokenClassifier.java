@@ -3,7 +3,10 @@ package com.tokenizer;
 import java.util.List;
 import java.util.Map;
 
-public class TokenClassifier {
+/**
+ * Classifies raw token strings into typed Token objects and adds them to the token list.
+ */
+class TokenClassifier {
 
     List<Token> tokenList;
 
@@ -45,22 +48,22 @@ public class TokenClassifier {
         this.tokenList = tokenList;
     }
 
+    /**
+     * Classifies a raw token string and appends the resulting Token to the token list. <br>
+     * Classification falls through operator → keyword → punctuation → dynamic.
+     */
     void mapToken(String rawToken) {
 
-        //check if it's an operator
         TokenType tokenType = OPERATORS.get(rawToken);
 
-        //check if it's a keyword
         if (isTokenNotFound(tokenType)) {
             tokenType = KEYWORDS.get(rawToken);
         }
 
-        //check if it's punctuation
         if (isTokenNotFound(tokenType)) {
             tokenType = PUNCTUATION.get(rawToken);
         }
 
-        //if still not found, then it's either a value or a variable
         if (isTokenNotFound(tokenType)) {
             tokenType = findDynamicTokenType(rawToken);
         }
@@ -74,6 +77,10 @@ public class TokenClassifier {
         return tokenType == null;
     }
 
+    /**
+     * Determines whether an unrecognized token is a numeric literal (VAL) or identifier (VAR).
+     * A token is VAL if every character is a digit, otherwise VAR.
+     */
     private TokenType findDynamicTokenType (String word) {
         boolean wordIsADigit = true;
 
