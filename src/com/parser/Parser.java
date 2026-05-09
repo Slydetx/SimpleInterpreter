@@ -54,7 +54,7 @@ public class Parser {
                 FunctionNode functionNode = new FunctionNode();
                 functionNode.name = parseFunctionDefinition();
                 functionNode.parameters = parseParameters();
-                functionNode.returnBody = parseFunctionBody();
+                functionNode.body = parseFunctionBody();
                 return functionNode;
             }
 
@@ -146,15 +146,15 @@ public class Parser {
     }
 
 
-    private InterpreterNode parseFunctionBody() {
+    private List<InterpreterNode> parseFunctionBody() {
 
-        //TODO: Extend this to return a List of InterpreterNodes later for multiple statements in the function body
+        List<InterpreterNode> bodyStatements = new ArrayList<>();
 
         consumer.matchAndConsume(TokenType.LBRACE);
-        InterpreterNode functionBody = parseStatement();
+        bodyStatements.add(parseStatement());
+        bodyStatements.addAll(parseCommaStatements());
         consumer.matchAndConsume(TokenType.RBRACE);
-
-        return functionBody;
+        return bodyStatements;
     }
 
     private VariableNode parseVariableAndAssignSign(Token currentToken) {

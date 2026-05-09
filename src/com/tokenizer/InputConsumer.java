@@ -23,7 +23,7 @@ public class InputConsumer {
     }
 
     char peekCurrentChar() {
-        return chars[index];
+        return index < chars.length ? chars[index] : ' ';
     }
 
     char peekNextChar() {

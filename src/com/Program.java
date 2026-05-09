@@ -15,12 +15,9 @@ public class Program {
             Tokenizer tokenizer = new Tokenizer(statement);
 
             tokenizer.tokenize();
-            Debugger.debugTokenizer(tokenizer);
 
             Parser parser = new Parser(tokenizer.tokenList);
             parser.parse();
-
-            Debugger.printTree(parser.root);
 
             treeInterpreter.evaluate(parser.root);
         }

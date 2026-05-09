@@ -45,9 +45,21 @@ public class TreeInterpreter {
         callStack.add(new HashMap<>());
         getCurrentScope().putAll(parametersToArguments);
 
-        Integer evaluatedFunctionResult = (Integer) evaluate(functionNode.returnBody);
 
-        removeFunctionCallFromStackFrame(functionNode);
+        Integer evaluatedFunctionResult = null;
+
+        try {
+            for (InterpreterNode statement : functionNode.body) {
+                evaluatedFunctionResult = (Integer) evaluate(statement);
+            }
+        } catch (ReturnException e) {
+
+            return e.returnValue();
+        }
+         finally {
+            removeFunctionCallFromStackFrame(functionNode);
+        }
+
 
         return evaluatedFunctionResult;
 
@@ -65,6 +77,12 @@ public class TreeInterpreter {
 
         while (isTrue(evaluate(node.condition))) {
             for (InterpreterNode statement : node.body) {
+                // The result of evaluate(statement) is intentionally ignored for normal statements.
+                // However, when a 'return' occurs inside a nested while/if, the return value has
+                // nowhere to go: the while loop keeps running (debugger confirmed: r=120, n=0
+                // are correct, but execution continues into n=-1).
+                // ReturnException solves this by bubbling up through evaluateWhile/evaluateIf
+                // back to evaluateFunctionCall, which catches it and stops execution.
                 evaluate(statement);
             }
         }
@@ -74,18 +92,38 @@ public class TreeInterpreter {
     private Object evaluateIf(IfNode node) {
         boolean isConditionTrue = isTrue(evaluate(node.condition));
 
+        Object evaluatedExpression;
+
         if (isConditionTrue) {
-            return evaluate(node.thenExpression);
+            evaluatedExpression = evaluate(node.thenExpression);
         } else {
-            return evaluate(node.elseExpression);
+            evaluatedExpression = evaluate(node.elseExpression);
+        }
+
+        // All side-effect statements return null
+        // If this assumption ever breaks, implementation should be changed
+        if (evaluatedExpression == null) {
+            return null;
+        } else {
+            // Non-null means a 'return' occurred (only return produces a value)
+            throw new ReturnException(evaluatedExpression);
         }
     }
 
     private Void evaluateAssign(AssignNode node) {
-         globalVariablesToValues.put(
-                node.variable.getVariableName(),
-                (int)evaluate(node.variableValue));
+
+        if (getCurrentScope() == null) {
+            globalVariablesToValues.put(
+                    node.variable.getVariableName(),
+                    (int)evaluate(node.variableValue));
+        } else {
+
+            getCurrentScope().put(
+                    node.variable.getVariableName(),
+                    (int)evaluate(node.variableValue));
+        }
         return null;
+
     }
 
     private int evaluateBinOp (BinaryOpNode node) {
@@ -134,8 +172,10 @@ public class TreeInterpreter {
     private Object evaluateVariable(VariableNode node) {
 
         String variableName = node.getVariableName();
+        Integer variableValue = null;
 
-        Integer variableValue = (Integer) getCurrentScope().get(variableName);
+        if (getCurrentScope() != null)
+            variableValue = (Integer) getCurrentScope().get(variableName);
 
         if (variableValue != null) {
             return variableValue;
@@ -169,6 +209,9 @@ public class TreeInterpreter {
     }
 
     private Map<String,Object> getCurrentScope() {
+
+        if (callStack.isEmpty()) return null;
+
         return callStack.peek();
     }
 

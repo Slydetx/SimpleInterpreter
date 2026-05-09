@@ -7,7 +7,7 @@ import java.lang.Character;
 
 public class Tokenizer {
 
-    //TODO: Implement Division, !=, >=
+    //TODO: Implement Division (/), !=, >=
 
     private final InputConsumer inputConsumer;
     private final TokenBuilder tokenBuilder;

@@ -33,7 +33,9 @@ public class TokenClassifier {
             "while", TokenType.WHILE,
             "do", TokenType.DO,
             "fun", TokenType.FUN,
-            "return", TokenType.RETURN
+            "return", TokenType.RETURN,
+            "true", TokenType.TRUE,
+            "false", TokenType.FALSE
     );
 
     TokenClassifier(List<Token> tokenList) {

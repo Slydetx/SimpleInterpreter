@@ -25,6 +25,15 @@ public class ExpressionParser {
 
     public InterpreterNode parseComparison () {
 
+        if (consumer.getCurrentTokenType() == TokenType.TRUE) {
+            consumer.matchAndConsume(TokenType.TRUE);
+            return new ValueNode(1);
+
+        } else if (consumer.getCurrentTokenType() == TokenType.FALSE) {
+            consumer.matchAndConsume(TokenType.FALSE);
+            return new ValueNode(0);
+        }
+
         InterpreterNode leftNode = parseExpression();
         Operator operator = consumer.consumeBinOperator(COMPARISON_TOKENS);
         InterpreterNode rightNode = parseExpression();
