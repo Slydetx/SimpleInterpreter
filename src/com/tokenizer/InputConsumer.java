@@ -54,7 +54,10 @@ public class InputConsumer {
     }
 
     public boolean nextTokenIsComparisonOperator() {
-        return  (peekCurrentChar() == '=' || peekCurrentChar() == '<') && peekNextChar() == '=';
+        return  (peekCurrentChar() == '='
+                || peekCurrentChar() == '<'
+                || peekCurrentChar() == '!'
+                || peekCurrentChar() == '>') && peekNextChar() == '=';
     }
 
 }

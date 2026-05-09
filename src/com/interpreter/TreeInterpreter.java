@@ -132,6 +132,17 @@ public class TreeInterpreter {
             case Operator.MULT -> {
                 return (Integer) evaluate(node.left) * (Integer) evaluate(node.right);
             }
+
+            case Operator.DIV -> {
+
+                Integer divisor = (Integer) evaluate(node.right);
+
+                if (divisor == 0) {
+                    throw new InterpreterException("Division by zero");
+                }
+                return (Integer) evaluate(node.left) / (Integer) evaluate(node.right);
+            }
+
             case Operator.PLUS -> {
                 return (Integer) evaluate(node.left) + (Integer) evaluate(node.right);
             }
@@ -152,13 +163,23 @@ public class TreeInterpreter {
             }
 
             case Operator.EQ -> {
-                boolean equal = evaluate(node.left) == evaluate(node.right);
+                boolean equal = Objects.equals(evaluate(node.left), evaluate(node.right));
                 return equal ? 1 : 0;
             }
 
             case Operator.LT_EQ -> {
-                boolean equal = (Integer) evaluate(node.left) <= (Integer) evaluate(node.right);
-                return equal ? 1 : 0;
+                boolean lessThanEqual = (Integer) evaluate(node.left) <= (Integer) evaluate(node.right);
+                return lessThanEqual ? 1 : 0;
+            }
+
+            case Operator.GT_EQ -> {
+                boolean lessThanEqual = (Integer) evaluate(node.left) >= (Integer) evaluate(node.right);
+                return lessThanEqual ? 1 : 0;
+            }
+
+            case Operator.NOT_EQ -> {
+                boolean notEqual = !Objects.equals(evaluate(node.left), evaluate(node.right));
+                return notEqual ? 1 : 0;
             }
 
             default -> throw new InterpreterException("Unknown operator");

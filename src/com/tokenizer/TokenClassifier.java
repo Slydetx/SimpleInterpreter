@@ -7,15 +7,18 @@ public class TokenClassifier {
 
     List<Token> tokenList;
 
-    private static final Map<String, TokenType> OPERATORS = Map.of(
-            "=", TokenType.ASSIGN,
-            "+", TokenType.PLUS,
-            "-", TokenType.MINUS,
-            "*", TokenType.MULT,
-            ">", TokenType.GT,
-            "<", TokenType.LT,
-            "==", TokenType.EQ,
-            "<=", TokenType.LT_EQ
+    private static final Map<String, TokenType> OPERATORS = Map.ofEntries(
+            Map.entry("=",  TokenType.ASSIGN),
+            Map.entry("+",  TokenType.PLUS),
+            Map.entry("-",  TokenType.MINUS),
+            Map.entry("*",  TokenType.MULT),
+            Map.entry("/",  TokenType.DIV),
+            Map.entry(">",  TokenType.GT),
+            Map.entry("<",  TokenType.LT),
+            Map.entry("==", TokenType.EQ),
+            Map.entry("<=", TokenType.LT_EQ),
+            Map.entry(">=", TokenType.GT_EQ),
+            Map.entry("!=", TokenType.NOT_EQ)
     );
 
     private static final Map<String, TokenType> PUNCTUATION = Map.of(

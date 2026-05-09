@@ -17,7 +17,9 @@ public class TokenConsumer {
             TokenType.GT, Operator.GT,
             TokenType.LT, Operator.LT,
             TokenType.EQ, Operator.EQ,
-            TokenType.LT_EQ, Operator.LT_EQ
+            TokenType.LT_EQ, Operator.LT_EQ,
+            TokenType.GT_EQ, Operator.GT_EQ,
+            TokenType.NOT_EQ, Operator.NOT_EQ
     );
 
     List<Token> tokenList;
@@ -68,11 +70,11 @@ public class TokenConsumer {
 
     }
 
-    Operator consumeBinOperator(Set<Operator> expectedOperators) {
+    Operator consumeBinOperator(Set<TokenType> expectedOperators) {
 
         Operator operator = TYPE_OPERATOR_MAP.get(getCurrentTokenType());
 
-        if (operator == null || !expectedOperators.contains(operator)) {
+        if (operator == null || !expectedOperators.contains(getCurrentTokenType())) {
             throw new ParseException("Invalid operator: " + getCurrentTokenType());
         }
 
@@ -81,7 +83,7 @@ public class TokenConsumer {
         return operator;
     }
 
-    String consumeAndGetFunctionName (Token currentToken) {
+        String consumeAndGetFunctionName (Token currentToken) {
         this.index += 1; // name
         return currentToken.tokenValue;
     }

@@ -10,11 +10,13 @@ import java.util.Set;
 
 public class ExpressionParser {
 
-    private static final Set<Operator> COMPARISON_TOKENS = Set.of(
-            Operator.GT,
-            Operator.LT,
-            Operator.EQ,
-            Operator.LT_EQ
+    private static final Set<TokenType> COMPARISON_TOKENS = Set.of(
+            TokenType.GT,
+            TokenType.LT,
+            TokenType.EQ,
+            TokenType.LT_EQ,
+            TokenType.GT_EQ,
+            TokenType.NOT_EQ
     );
 
     TokenConsumer consumer;
@@ -25,16 +27,13 @@ public class ExpressionParser {
 
     public InterpreterNode parseComparison () {
 
-        if (consumer.getCurrentTokenType() == TokenType.TRUE) {
-            consumer.matchAndConsume(TokenType.TRUE);
-            return new ValueNode(1);
+        InterpreterNode leftNode = parseExpression();
 
-        } else if (consumer.getCurrentTokenType() == TokenType.FALSE) {
-            consumer.matchAndConsume(TokenType.FALSE);
-            return new ValueNode(0);
+        if (!COMPARISON_TOKENS.contains(consumer.getCurrentTokenType())) {
+
+            return leftNode;
         }
 
-        InterpreterNode leftNode = parseExpression();
         Operator operator = consumer.consumeBinOperator(COMPARISON_TOKENS);
         InterpreterNode rightNode = parseExpression();
         return new BinaryOpNode(leftNode,rightNode,operator);
@@ -46,7 +45,7 @@ public class ExpressionParser {
         InterpreterNode leftNode = parseTerm();
 
         while (consumer.getCurrentTokenType() == TokenType.PLUS || consumer.getCurrentTokenType() == TokenType.MINUS) {
-            Operator operator = consumer.consumeBinOperator(Set.of(Operator.PLUS,Operator.MINUS));
+            Operator operator = consumer.consumeBinOperator(Set.of(TokenType.PLUS,TokenType.MINUS));
             InterpreterNode rightNode = parseTerm();
             leftNode = new BinaryOpNode(leftNode,rightNode,operator);
         }
@@ -57,8 +56,8 @@ public class ExpressionParser {
 
         InterpreterNode leftNode = parseFactor();
 
-        while (consumer.getCurrentTokenType() == TokenType.MULT) {
-            Operator operator = consumer.consumeBinOperator(Set.of(Operator.MULT)); //useless check, but needed for comparison operators... maybe split functions? But useful if introducing Operator.DIVIDE later
+        while (consumer.getCurrentTokenType() == TokenType.MULT || consumer.getCurrentTokenType() == TokenType.DIV) {
+            Operator operator = consumer.consumeBinOperator(Set.of(TokenType.MULT, TokenType.DIV));
             InterpreterNode rightNode = parseFactor();
             leftNode = new BinaryOpNode(leftNode, rightNode, operator);
         }
@@ -87,6 +86,10 @@ public class ExpressionParser {
             case TokenType.VAR -> { return parseVariable(currentToken); }
             case TokenType.VAL -> { return parseValue(currentToken); }
             case TokenType.LPAR ->{ return parseParenthesis(); }
+
+            case TokenType.TRUE -> { consumer.matchAndConsume(TokenType.TRUE); return new ValueNode(1); }
+            case TokenType.FALSE -> { consumer.matchAndConsume(TokenType.FALSE); return new ValueNode(0); }
+
             default -> throw  new ParseException ("Unexpected value or variable token: " + consumer.getCurrentTokenType());
         }
     }
@@ -104,7 +107,7 @@ public class ExpressionParser {
         consumer.matchAndConsume(TokenType.LPAR);
         List<InterpreterNode> arguments = new ArrayList<>();
 
-        while (consumer.getCurrentTokenType() == TokenType.VAL || consumer.getCurrentTokenType() == TokenType.VAR) {
+        while (checkIsValidArgument()){
 
             arguments.add(parseExpression());
 
@@ -125,6 +128,12 @@ public class ExpressionParser {
     private ValueNode parseValue(Token token) {
         consumer.matchAndConsume(TokenType.VAL);
         return new ValueNode(token.getNumericValue());
+    }
+    private boolean checkIsValidArgument() {
+        return consumer.getCurrentTokenType() == TokenType.VAL
+                || consumer.getCurrentTokenType() == TokenType.VAR
+                ||  consumer.getCurrentTokenType() == TokenType.TRUE
+                || consumer.getCurrentTokenType() == TokenType.FALSE;
     }
 
 }

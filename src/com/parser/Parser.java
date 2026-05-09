@@ -31,7 +31,7 @@ public class Parser {
             case VAR -> {
                 AssignNode assignNode = new AssignNode();
                 assignNode.variable = parseVariableAndAssignSign(currentToken);
-                assignNode.variableValue = expressionParser.parseExpression();
+                assignNode.variableValue = expressionParser.parseComparison();
                 return assignNode;
             }
 
@@ -114,7 +114,7 @@ public class Parser {
 
         InterpreterNode doStatement = parseDo();
         whileBodyStatements.add(doStatement);
-        List <InterpreterNode> parsedCommaStatements = parseCommaStatements();  //useless check, but needed for comparison operators... maybe split functions?
+        List <InterpreterNode> parsedCommaStatements = parseCommaStatements();
         whileBodyStatements.addAll(parsedCommaStatements);
 
         return whileBodyStatements;

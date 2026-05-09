@@ -2,12 +2,9 @@ package com.tokenizer;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.lang.Character;
 
 public class Tokenizer {
-
-    //TODO: Implement Division (/), !=, >=
 
     private final InputConsumer inputConsumer;
     private final TokenBuilder tokenBuilder;
