@@ -1,2 +1,2 @@
-fun fact_iter(n) { r = 1, while true do if n == 0 then return r else r = r * n, n = n - 1 }
-b = fact_iter(5)
+fun fact_rec(n) { if n <= 0 then return 1 else return n * fact_rec(n - 1) }
+a = fact_rec(5)

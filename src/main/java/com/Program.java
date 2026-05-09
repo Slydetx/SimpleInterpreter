@@ -4,11 +4,14 @@ import com.interpreter.TreeInterpreter;
 import com.tokenizer.Tokenizer;
 import com.parser.Parser;
 
+import java.util.Map;
+
 public class Program {
 
-    public TreeInterpreter execute(String input) {
+    TreeInterpreter treeInterpreter = new TreeInterpreter();
+
+    public Program execute(String input) {
         String[] statements = input.split("\n");
-        TreeInterpreter treeInterpreter = new TreeInterpreter();
 
         for (String statement : statements) {
             Tokenizer tokenizer = new Tokenizer(statement);
@@ -20,7 +23,12 @@ public class Program {
 
             treeInterpreter.evaluate(parser.root);
         }
-        treeInterpreter.printMemory();
-        return treeInterpreter;
+        treeInterpreter.memory.printMemory();
+
+        return this;
+    }
+
+    public Map<String, Object> getVariables() {
+        return this.treeInterpreter.memory.globalVariablesToValues;
     }
 }

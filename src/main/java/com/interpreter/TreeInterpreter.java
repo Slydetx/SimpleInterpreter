@@ -6,59 +6,52 @@ import java.util.*;
 
 public class TreeInterpreter {
 
-    public Stack<Map<String, Object>> callStack = new Stack<>();
-    public Map<String, Object> globalVariablesToValues = new HashMap<>();
-    public Map<String, FunctionNode> variablesToFunctions = new HashMap<>();
+    public InterpreterMemory memory = new InterpreterMemory();
 
     public Object evaluate(InterpreterNode root) {
 
         switch (root) {
-            case FunctionCallNode node -> {
-                return evaluateFunctionCall(node);
-            }
-            case FunctionNode node -> {
-                return evaluateFunction(node);
-            }
-            case WhileNode node -> {
-                return evaluateWhile(node);
-            }
-            case IfNode node -> {
-                return evaluateIf(node);
-            }
-            case AssignNode node -> {
-                return evaluateAssign(node);
-            }
-            case BinaryOpNode node -> {
-                return evaluateBinOp(node);
-            }
-            case ValueNode node -> {
-                return evaluateValue(node);
-            }
-            case VariableNode node -> {
-                return evaluateVariable(node);
-            }
+            case FunctionCallNode node -> { return evaluateFunctionCall(node); }
+            case FunctionNode node -> {     return evaluateFunction(node); }
+            case WhileNode node -> {        return evaluateWhile(node); }
+            case IfNode node -> {           return evaluateIf(node); }
+            case AssignNode node -> {       return evaluateAssign(node); }
+            case BinaryOpNode node -> {     return evaluateBinOp(node); }
+            case ValueNode node -> {        return evaluateValue(node); }
+            case VariableNode node -> {     return evaluateVariable(node); }
             default -> throw new InterpreterException("Unknown node type");
         }
     }
 
     private Object evaluateFunctionCall(FunctionCallNode node) {
 
-        FunctionNode functionNode = variablesToFunctions.get(node.name);
+        FunctionNode functionNode = memory.getFunction(node.name);
 
+        Map<String,Object> parametersToArguments = evaluatesArguments(functionNode,node);
+
+        memory.pushStackFrame(parametersToArguments);
+
+        return executeFunction(functionNode);
+    }
+
+    private Map<String, Object> evaluatesArguments(FunctionNode functionNode, FunctionCallNode callNode) {
         Map<String, Object> parametersToArguments = new HashMap<>();
 
-        for (int i = 0; i < node.arguments.size(); i++) {
+        for (int i = 0; i < callNode.arguments.size(); i++) {
             VariableNode parameter = functionNode.parameters.get(i);
-            InterpreterNode argument = node.arguments.get(i);
+            InterpreterNode argument = callNode.arguments.get(i);
 
             if (parameter == null || argument == null) {
-                throw new InterpreterException("Invalid amount of parameters: Expected " + functionNode.parameters.size() + "but got " + node.arguments.size());
+                throw new InterpreterException("Invalid amount of parameters: Expected " + functionNode.parameters.size() + "but got " + callNode.arguments.size());
             }
 
             parametersToArguments.put(parameter.getVariableName(), evaluate(argument));
         }
-        callStack.add(new HashMap<>());
-        getCurrentScope().putAll(parametersToArguments);
+
+        return parametersToArguments;
+    }
+
+    private Object executeFunction(FunctionNode functionNode) {
 
         Integer evaluatedFunctionResult = null;
 
@@ -71,7 +64,8 @@ public class TreeInterpreter {
             return e.returnValue();
 
         } finally {
-            removeFunctionCallFromStackFrame();
+
+            memory.popStackFrame();
 
         }
         return evaluatedFunctionResult;
@@ -79,9 +73,7 @@ public class TreeInterpreter {
 
 
     private Object evaluateFunction(FunctionNode node) {
-        variablesToFunctions.put(
-                node.name.getVariableName(),
-                node);
+        memory.defineFunction(node.name.getVariableName(),node);
         return null;
     }
 
@@ -119,27 +111,14 @@ public class TreeInterpreter {
     }
 
     private Void evaluateAssign(AssignNode node) {
-
-        if (getCurrentScope() == null) {
-            globalVariablesToValues.put(
-                    node.variable.getVariableName(),
-                    evaluate(node.variableValue));
-        } else {
-
-            getCurrentScope().put(
-                    node.variable.getVariableName(),
-                    evaluate(node.variableValue));
-        }
+        memory.setVariable(node.variable.getVariableName(), evaluate(node.variableValue));
         return null;
-
     }
 
     private int evaluateBinOp(BinaryOpNode node) {
 
         switch (node.operator) {
-            case Operator.MULT -> {
-                return (Integer) evaluate(node.left) * (Integer) evaluate(node.right);
-            }
+            case Operator.MULT -> { return (Integer) evaluate(node.left) * (Integer) evaluate(node.right);}
 
             case Operator.DIV -> {
 
@@ -151,13 +130,9 @@ public class TreeInterpreter {
                 return (Integer) evaluate(node.left) / (Integer) evaluate(node.right);
             }
 
-            case Operator.PLUS -> {
-                return (Integer) evaluate(node.left) + (Integer) evaluate(node.right);
-            }
+            case Operator.PLUS -> { return (Integer) evaluate(node.left) + (Integer) evaluate(node.right); }
 
-            case Operator.MINUS -> {
-                return (Integer) evaluate(node.left) - (Integer) evaluate(node.right);
-            }
+            case Operator.MINUS -> { return (Integer) evaluate(node.left) - (Integer) evaluate(node.right); }
 
             case Operator.GT -> {
                 boolean greaterThan = (Integer) evaluate(node.left) > (Integer) evaluate(node.right);
@@ -200,54 +175,12 @@ public class TreeInterpreter {
     private Object evaluateVariable(VariableNode node) {
 
         String variableName = node.getVariableName();
-        Integer variableValue = null;
+        Integer variableValue = memory.getVariableValue(variableName);
 
-        if (getCurrentScope() != null)
-            variableValue = (Integer) getCurrentScope().get(variableName);
-
-        if (variableValue != null) {
-            return variableValue;
-        }
-
-        variableValue = (Integer) globalVariablesToValues.get(variableName);
-
-        if (variableValue != null) {
-            return variableValue;
-        }
-
-        throw new InterpreterException(
-                "Invalid variable: " + variableName
-        );
+        return variableValue;
     }
 
-    public Map<String, Object> getVariables() {
-        return globalVariablesToValues;
-    }
-
-    public void printMemory() {
-
-        for (Map.Entry<String, Object> entry : this.globalVariablesToValues.entrySet()) {
-
-            String key = entry.getKey();
-            Integer value = (Integer) entry.getValue();
-
-            System.out.println(key + ": " + value);
-
-        }
-    }
-
-    private void removeFunctionCallFromStackFrame() {
-        this.callStack.pop();
-    }
-
-    private Map<String, Object> getCurrentScope() {
-
-        if (callStack.isEmpty()) return null;
-
-        return callStack.peek();
-    }
-
-    public boolean isTrue(Object value) {
+    boolean isTrue(Object value) {
         return ((int) value) != 0;
     }
 }

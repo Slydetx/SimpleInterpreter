@@ -12,7 +12,7 @@ public class Main {
         Program program = new Program();
         program.execute(textFileReader.getContent());
         */
-        
+
         TerminalScanner terminalScanner = new TerminalScanner();
         terminalScanner.scanConsole();
 
