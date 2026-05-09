@@ -9,9 +9,9 @@ public class Tokenizer {
 
     //TODO: Implement Division, !=, >=
 
-    private InputConsumer inputConsumer;
-    private TokenBuilder tokenBuilder;
-    private TokenClassifier tokenClassifier;
+    private final InputConsumer inputConsumer;
+    private final TokenBuilder tokenBuilder;
+    private final TokenClassifier tokenClassifier;
 
     public List<Token> tokenList = new ArrayList<>();
 

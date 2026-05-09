@@ -2,7 +2,7 @@ package com.tokenizer;
 
 public class InputConsumer {
     private int index = 0;
-    private char[] chars;
+    private final char[] chars;
 
     InputConsumer(String input) {
         chars = input.toCharArray();

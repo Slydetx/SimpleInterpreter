@@ -7,7 +7,7 @@ import java.util.Map;
 
 public class TreeInterpreter {
 
-    public Map<String,Integer> variablesToValues = new HashMap<>();
+    public Map<String,Object> variablesToValues = new HashMap<>();
     public Map<String,FunctionNode> variablesToFunctions = new HashMap<>();
 
     public Object evaluate (InterpreterNode root) {
@@ -31,13 +31,13 @@ public class TreeInterpreter {
 
         for (int i = 0; i < node.arguments.size(); i++ ) {
             VariableNode parameter = functionNode.parameters.get(i);
-            ValueNode argument = (ValueNode) node.arguments.get(i);
+            InterpreterNode argument = node.arguments.get(i);
 
             if (parameter == null || argument == null ) {
                 throw new InterpreterException("Invalid Amount of parameters: Expected " + functionNode.parameters.size() + "but got " + node.arguments.size());
             }
 
-            variablesToValues.put(parameter.getVariableName(), argument.value);
+            variablesToValues.put(parameter.getVariableName(), evaluate(argument));
         }
 
         Integer evaluatedFunctionResult = (Integer) evaluate(functionNode.returnBody);
@@ -66,15 +66,14 @@ public class TreeInterpreter {
         return null;
     }
 
-    private Void evaluateIf(IfNode node) {
+    private Object evaluateIf(IfNode node) {
         boolean isConditionTrue = isTrue(evaluate(node.condition));
 
         if (isConditionTrue) {
-            evaluate(node.thenExpression);
+            return evaluate(node.thenExpression);
         } else {
-            evaluate(node.elseExpression);
+            return evaluate(node.elseExpression);
         }
-        return null;
     }
 
     private Void evaluateAssign(AssignNode node) {
@@ -94,6 +93,11 @@ public class TreeInterpreter {
                 return (Integer) evaluate(node.left) + (Integer) evaluate(node.right);
             }
 
+            case Operator.MINUS -> {
+                boolean equal = evaluate(node.left) == evaluate(node.right);
+                return (Integer) evaluate(node.left) - (Integer) evaluate(node.right);
+            }
+
             case Operator.GT -> {
                 boolean greaterThan = (Integer) evaluate(node.left) > (Integer) evaluate(node.right);
                 return greaterThan ? 1 : 0;
@@ -109,7 +113,12 @@ public class TreeInterpreter {
                 return equal ? 1 : 0;
             }
 
-            default -> throw new IllegalStateException("Unknown operator");
+            case Operator.LT_EQ -> {
+                boolean equal = (Integer) evaluate(node.left) <= (Integer) evaluate(node.right);
+                return equal ? 1 : 0;
+            }
+
+            default -> throw new InterpreterException("Unknown operator");
         }
     }
 
@@ -118,7 +127,8 @@ public class TreeInterpreter {
     }
 
     private Object evaluateVariable(VariableNode node) {
-         Integer variableValue = variablesToValues.get(node.getVariableName());
+
+         Integer variableValue = (Integer) variablesToValues.get(node.getVariableName());
 
          if (variableValue == null) {
 
@@ -132,10 +142,10 @@ public class TreeInterpreter {
 
     public void printMemory() {
 
-        for (Map.Entry<String, Integer> entry : this.variablesToValues.entrySet()) {
+        for (Map.Entry<String, Object> entry : this.variablesToValues.entrySet()) {
 
             String key = entry.getKey();
-            Integer value = entry.getValue();
+            Integer value = (Integer) entry.getValue();
 
             System.out.println(key + ": " + value);
 
