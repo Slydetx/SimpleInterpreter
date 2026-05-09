@@ -10,7 +10,6 @@ public class TreeInterpreter {
     public Map<String, Object> globalVariablesToValues = new HashMap<>();
     public Map<String, FunctionNode> variablesToFunctions = new HashMap<>();
 
-
     public Object evaluate(InterpreterNode root) {
 
         switch (root) {
@@ -61,7 +60,6 @@ public class TreeInterpreter {
         callStack.add(new HashMap<>());
         getCurrentScope().putAll(parametersToArguments);
 
-
         Integer evaluatedFunctionResult = null;
 
         try {
@@ -70,15 +68,13 @@ public class TreeInterpreter {
                 if (statementResult != null) evaluatedFunctionResult = (Integer) statementResult;
             }
         } catch (ReturnException e) {
-
             return e.returnValue();
+
         } finally {
-            removeFunctionCallFromStackFrame(functionNode);
+            removeFunctionCallFromStackFrame();
+
         }
-
-
         return evaluatedFunctionResult;
-
     }
 
 
@@ -94,12 +90,18 @@ public class TreeInterpreter {
         while (isTrue(evaluate(node.condition))) {
             for (InterpreterNode statement : node.body) {
                 // The result of evaluate(statement) is intentionally ignored for normal statements.
-                // However, when a 'return' occurs inside a nested while/if, the return value has
-                // nowhere to go: the while loop keeps running (debugger confirmed: r=120, n=0
-                // are correct, but execution continues into n=-1).
-                // ReturnException solves this by bubbling up through evaluateWhile/evaluateIf
-                // back to evaluateFunctionCall, which catches it and stops execution.
-                evaluate(statement);
+                // However, when a 'return' occurs inside the while body, the return value has
+                // nowhere to go: the while loop keeps running (debugger confirmed: values are
+                // correct at the point of return, but execution continues into the next iteration).
+                // A non-null result reliably signals a 'return' since bare expressions as statements
+                // are not supported in the language.
+                //  ReturnException is thrown and propagates to evaluateFunctionCall which catches it
+
+                Object evaluatedStatement = evaluate(statement);
+
+                if (evaluatedStatement != null) {
+                    throw new ReturnException(evaluatedStatement);
+                }
             }
         }
         return null;
@@ -108,22 +110,12 @@ public class TreeInterpreter {
     private Object evaluateIf(IfNode node) {
         boolean isConditionTrue = isTrue(evaluate(node.condition));
 
-        Object evaluatedExpression;
-
         if (isConditionTrue) {
-            evaluatedExpression = evaluate(node.thenExpression);
+            return evaluate(node.thenExpression);
         } else {
-            evaluatedExpression = evaluate(node.elseExpression);
+            return evaluate(node.elseExpression);
         }
 
-        // All side-effect statements return null
-        // If this assumption ever breaks, implementation should be changed
-        if (evaluatedExpression == null) {
-            return null;
-        } else {
-            // Non-null means a 'return' occurred (only return produces a value)
-            throw new ReturnException(evaluatedExpression);
-        }
     }
 
     private Void evaluateAssign(AssignNode node) {
@@ -131,12 +123,12 @@ public class TreeInterpreter {
         if (getCurrentScope() == null) {
             globalVariablesToValues.put(
                     node.variable.getVariableName(),
-                    (int) evaluate(node.variableValue));
+                    evaluate(node.variableValue));
         } else {
 
             getCurrentScope().put(
                     node.variable.getVariableName(),
-                    (int) evaluate(node.variableValue));
+                    evaluate(node.variableValue));
         }
         return null;
 
@@ -164,7 +156,6 @@ public class TreeInterpreter {
             }
 
             case Operator.MINUS -> {
-                boolean equal = evaluate(node.left) == evaluate(node.right);
                 return (Integer) evaluate(node.left) - (Integer) evaluate(node.right);
             }
 
@@ -229,6 +220,10 @@ public class TreeInterpreter {
         );
     }
 
+    public Map<String, Object> getVariables() {
+        return globalVariablesToValues;
+    }
+
     public void printMemory() {
 
         for (Map.Entry<String, Object> entry : this.globalVariablesToValues.entrySet()) {
@@ -241,7 +236,7 @@ public class TreeInterpreter {
         }
     }
 
-    private void removeFunctionCallFromStackFrame(FunctionNode functionNode) {
+    private void removeFunctionCallFromStackFrame() {
         this.callStack.pop();
     }
 

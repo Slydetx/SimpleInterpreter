@@ -1,13 +1,12 @@
 package com;
 
-import com.debug.Debugger;
 import com.interpreter.TreeInterpreter;
 import com.tokenizer.Tokenizer;
 import com.parser.Parser;
 
 public class Program {
 
-    public void execute(String input) {
+    public TreeInterpreter execute(String input) {
         String[] statements = input.split("\n");
         TreeInterpreter treeInterpreter = new TreeInterpreter();
 
@@ -22,5 +21,6 @@ public class Program {
             treeInterpreter.evaluate(parser.root);
         }
         treeInterpreter.printMemory();
+        return treeInterpreter;
     }
 }
