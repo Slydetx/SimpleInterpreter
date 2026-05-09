@@ -6,23 +6,39 @@ import java.util.*;
 
 public class TreeInterpreter {
 
-    public Stack<Map<String,Object>> callStack = new Stack<>();
-    public Map<String,Object> globalVariablesToValues = new HashMap<>();
-    public Map<String,FunctionNode> variablesToFunctions = new HashMap<>();
+    public Stack<Map<String, Object>> callStack = new Stack<>();
+    public Map<String, Object> globalVariablesToValues = new HashMap<>();
+    public Map<String, FunctionNode> variablesToFunctions = new HashMap<>();
 
 
-    public Object evaluate (InterpreterNode root) {
+    public Object evaluate(InterpreterNode root) {
 
         switch (root) {
-            case FunctionCallNode node -> {return evaluateFunctionCall(node);}
-            case FunctionNode node     -> {return evaluateFunction(node);}
-            case WhileNode node        -> {return evaluateWhile(node);}
-            case IfNode node           -> {return evaluateIf(node);}
-            case AssignNode node       -> {return evaluateAssign(node);}
-            case BinaryOpNode node     -> {return evaluateBinOp(node);}
-            case ValueNode node        -> {return evaluateValue(node);}
-            case VariableNode node     -> {return evaluateVariable(node);}
-            default -> throw new InterpreterException ("Unknown node type");
+            case FunctionCallNode node -> {
+                return evaluateFunctionCall(node);
+            }
+            case FunctionNode node -> {
+                return evaluateFunction(node);
+            }
+            case WhileNode node -> {
+                return evaluateWhile(node);
+            }
+            case IfNode node -> {
+                return evaluateIf(node);
+            }
+            case AssignNode node -> {
+                return evaluateAssign(node);
+            }
+            case BinaryOpNode node -> {
+                return evaluateBinOp(node);
+            }
+            case ValueNode node -> {
+                return evaluateValue(node);
+            }
+            case VariableNode node -> {
+                return evaluateVariable(node);
+            }
+            default -> throw new InterpreterException("Unknown node type");
         }
     }
 
@@ -32,11 +48,11 @@ public class TreeInterpreter {
 
         Map<String, Object> parametersToArguments = new HashMap<>();
 
-        for (int i = 0; i < node.arguments.size(); i++ ) {
+        for (int i = 0; i < node.arguments.size(); i++) {
             VariableNode parameter = functionNode.parameters.get(i);
             InterpreterNode argument = node.arguments.get(i);
 
-            if (parameter == null || argument == null ) {
+            if (parameter == null || argument == null) {
                 throw new InterpreterException("Invalid amount of parameters: Expected " + functionNode.parameters.size() + "but got " + node.arguments.size());
             }
 
@@ -50,13 +66,13 @@ public class TreeInterpreter {
 
         try {
             for (InterpreterNode statement : functionNode.body) {
-                evaluatedFunctionResult = (Integer) evaluate(statement);
+                Object statementResult = evaluate(statement);
+                if (statementResult != null) evaluatedFunctionResult = (Integer) statementResult;
             }
         } catch (ReturnException e) {
 
             return e.returnValue();
-        }
-         finally {
+        } finally {
             removeFunctionCallFromStackFrame(functionNode);
         }
 
@@ -73,7 +89,7 @@ public class TreeInterpreter {
         return null;
     }
 
-    private Void evaluateWhile (WhileNode node) {
+    private Void evaluateWhile(WhileNode node) {
 
         while (isTrue(evaluate(node.condition))) {
             for (InterpreterNode statement : node.body) {
@@ -115,18 +131,18 @@ public class TreeInterpreter {
         if (getCurrentScope() == null) {
             globalVariablesToValues.put(
                     node.variable.getVariableName(),
-                    (int)evaluate(node.variableValue));
+                    (int) evaluate(node.variableValue));
         } else {
 
             getCurrentScope().put(
                     node.variable.getVariableName(),
-                    (int)evaluate(node.variableValue));
+                    (int) evaluate(node.variableValue));
         }
         return null;
 
     }
 
-    private int evaluateBinOp (BinaryOpNode node) {
+    private int evaluateBinOp(BinaryOpNode node) {
 
         switch (node.operator) {
             case Operator.MULT -> {
@@ -229,7 +245,7 @@ public class TreeInterpreter {
         this.callStack.pop();
     }
 
-    private Map<String,Object> getCurrentScope() {
+    private Map<String, Object> getCurrentScope() {
 
         if (callStack.isEmpty()) return null;
 

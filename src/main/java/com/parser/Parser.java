@@ -26,7 +26,6 @@ public class Parser {
     public InterpreterNode parseStatement() {
 
         Token currentToken = consumer.getCurrentToken();
-
         switch (currentToken.tokenType) {
             case VAR -> {
                 AssignNode assignNode = new AssignNode();

@@ -14,6 +14,7 @@ public class TokenConsumer {
             TokenType.PLUS, Operator.PLUS,
             TokenType.MINUS, Operator.MINUS,
             TokenType.MULT, Operator.MULT,
+            TokenType.DIV, Operator.DIV,
             TokenType.GT, Operator.GT,
             TokenType.LT, Operator.LT,
             TokenType.EQ, Operator.EQ,

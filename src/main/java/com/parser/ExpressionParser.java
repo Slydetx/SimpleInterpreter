@@ -29,8 +29,8 @@ public class ExpressionParser {
 
         InterpreterNode leftNode = parseExpression();
 
-        if (!COMPARISON_TOKENS.contains(consumer.getCurrentTokenType())) {
-
+        // getCurrentTokenType() returns null when the index is past the end of the token list
+        if (consumer.getCurrentTokenType() == null || !COMPARISON_TOKENS.contains(consumer.getCurrentTokenType())) {
             return leftNode;
         }
 
