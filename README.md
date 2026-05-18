@@ -13,7 +13,7 @@ Built as part of a JetBrains internship application.
 ```bash
 mvn package
 ```
-**Run (interactive):**
+**Run:**
 ```bash
 java -jar target/simple-interpreter-1.0.0.jar
 ```
@@ -32,16 +32,16 @@ The interpreter reads a program from standard input, executes it, and prints the
 
 ### Statements
 
-Statements are separated by newlines. Commas `,` are used to separate multiple 
+Newlines separate statements. Commas `,` are used to separate multiple 
 statements inside function bodies `{ }` and while loop bodies.
 
-| Statement | Syntax |
-|---|---|
-| Assignment | `x = <expression>` |
-| If/else | `if <condition> then <statement> else <statement>` |
-| While loop | `while <condition> do <statement>, <statement>, ...` |
-| Function definition | `fun name(params) { <statement>, ... }` |
-| Return | `return <expression>` |
+| Statement           | Syntax                                               |
+|---------------------|------------------------------------------------------|
+| Assignment          | `x = <expression>`                                   |
+| If/else             | `if <condition> then <statement> else <statement>`   |
+| While loop          | `while <condition> do <statement>, <statement>, ...` |
+| Function definition | `fun name(params) { <statement>, ... }`              |
+| Return              | `return <expression>`                                |
 
 > **Note:** Bare expressions are not valid statements. The result of an expression must always be assigned to a variable. For example `add(2, 3)` alone is not a valid statement — use `x = add(2, 3)` instead.
 
@@ -49,10 +49,10 @@ statements inside function bodies `{ }` and while loop bodies.
 
 Arithmetic and comparison expressions with standard operator precedence:
 
-| Operators | Description |
-|---|---|
-| `* /` | Multiplication, integer division |
-| `+ -` | Addition, subtraction |
+| Operators         | Description                                  |
+|-------------------|----------------------------------------------|
+| `* /`             | Multiplication, integer division             |
+| `+ -`             | Addition, subtraction                        |
 | `> >= < <= == !=` | Comparison (returns 1 for true, 0 for false) |
 
 Parentheses can be used to override precedence: `(2 + 3) * 4`.

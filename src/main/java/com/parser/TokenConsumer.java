@@ -77,7 +77,7 @@ class TokenConsumer {
 
         if (matchesCurrent(tokenType)) consume();
         else {
-            throw new ParseException("Expected " + peekCurrentTokenType() + " but got " + tokenType + " at position " + index);
+            throw new ParseException("Expected " + tokenType + " but got " + peekCurrentTokenType() + " at position " + index);
         }
 
     }
