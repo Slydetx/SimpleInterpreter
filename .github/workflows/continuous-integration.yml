@@ -1,0 +1,73 @@
+name: Continuous Integration
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Least privilege: this workflow only reads your code.
+permissions:
+  contents: read
+
+# A new push cancels the previous run on the same branch.
+concurrency:
+  group: continuous-integration-on-branch-${{ github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  test-and-compile-jar:
+    runs-on: ubuntu-latest
+    strategy:
+      # Don't cancel 25 when 21 fails - you want to see both.
+      fail-fast: false
+      matrix:
+        java: ['21', '25']
+    steps:
+      # Copy repo onto the runner
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: ${{ matrix.java }}
+          cache: maven
+      - run: mvn -B -ntp package
+      - uses: actions/upload-artifact@v7
+        if: matrix.java == '21'
+        with:
+          name: simple-interpreter-jar
+          path: target/simple-interpreter-*.jar
+
+  documentation:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        java: [ '21', '25' ]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: ${{ matrix.java }}
+          cache: maven
+      - run: mvn -B -ntp javadoc:javadoc
+
+  smoke:
+    # Only runs if both jobs above succeed.
+    needs: [test-and-compile-jar, documentation]
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        java: [ '21', '25' ]
+    steps:
+      - uses: actions/download-artifact@v7
+        with:
+          name: simple-interpreter-jar
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: ${{ matrix.java }}
+      - name: Run a program through the jar
+        run: printf 'x = 2\ny = (x + 2) * 2\n\n' | java -jar simple-interpreter-*.jar
