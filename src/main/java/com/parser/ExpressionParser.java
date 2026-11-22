@@ -14,7 +14,7 @@ import java.util.Set;
  * Uses recursive descent with the following precedence hierarchy (lowest to highest):<br>
  *   parseComparison → parseExpression → parseTerm → parseFactor<br>
  * <br>
- * - parseComparison handles ==, !=, <, <=, >, >=<br>
+ * - parseComparison handles {@code ==, !=, <, <=, >, >=}<br>
  * - parseExpression handles + and - <br>
  * - parseTerm       handles * and / <br>
  * - parseFactor     handles literals, variables, function calls, parentheses<br>
