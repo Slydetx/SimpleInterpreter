@@ -7,7 +7,7 @@ Built as part of a JetBrains internship application.
 
 ## Building and Running
 
-**Requirements:** Java 24+, Maven
+**Requirements:** Java 21+, Maven
 
 **Build:**
 ```bash
@@ -15,7 +15,7 @@ mvn package
 ```
 **Run:**
 ```bash
-java -jar target/simple-interpreter-1.0.0.jar
+java -jar target/simple-interpreter-0.1.0.jar
 ```
 Type your program and **press `Enter` after a blank line to execute.**
 
