@@ -51,7 +51,7 @@ jobs:
           distribution: temurin
           java-version: ${{ matrix.java }}
           cache: maven
-      - run: mvn -B -ntp javadoc:javadoc
+      - run: mvn -B -ntp org.apache.maven.plugins:maven-javadoc-plugin:javadoc
 
   smoke:
     # Only runs if both jobs above succeed.
