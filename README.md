@@ -1,5 +1,9 @@
 # Simple Interpreter
 
+[![Continuous Integration](https://github.com/Slydetx/SimpleInterpreter/actions/workflows/continuous-integration.yml/badge.svg)](https://github.com/Slydetx/SimpleInterpreter/actions/workflows/continuous-integration.yml)
+[![Latest release](https://img.shields.io/github/v/release/Slydetx/SimpleInterpreter)](https://github.com/Slydetx/SimpleInterpreter/releases/latest)
+[![License: MIT](https://img.shields.io/github/license/Slydetx/SimpleInterpreter)](LICENSE)
+
 A tree-walking interpreter for a small custom programming language, written in Java.
 Built as part of a JetBrains internship application.
 
